@@ -5,15 +5,15 @@ export type ModuleState =
   | 'EMPTY';
 
 export type MaterialType =
-  | 'Yeso/Placocentro'
-  | 'Madera/Moldajes'
-  | 'Herrajes/Pernos'
-  | 'RCD Segregado';
+  | 'Volcanita / Yeso'
+  | 'Madera / Moldajes'
+  | 'Ferretería / Pernos'
+  | 'Residuos Separados';
 
 export type WasteType =
-  | 'Madera RCD'
-  | 'Metales'
-  | 'Cartón/Embalaje'
+  | 'Despuntes de Madera'
+  | 'Despuntes Metálicos'
+  | 'Cartón / Film Embalaje'
   | 'Escombro Limpio';
 
 export interface FloorStatus {
@@ -30,10 +30,51 @@ export interface FloorStatus {
 
 export interface WasteCategory {
   type: string;
+  wasteKey: WasteType;
   icon: string;
   recyclingRate: string;
   sinaderCode: string;
   description: string;
+}
+
+export type WasteTotalsKg = Record<WasteType, number>;
+
+export interface OperationEvent {
+  id: string;
+  timestamp: string;
+  floorNumber: number;
+  moduleId: string;
+  action: string;
+  detail: string;
+  kind: 'SUPPLY' | 'WASTE' | 'GATE' | 'MOVE';
+}
+
+export interface RoiParams {
+  floors: number;
+  workers: number;
+  materialBudgetMillion: number;
+}
+
+export interface TourProgress {
+  gateDispatched: boolean;
+  floorDelivered: boolean;
+  wasteReturned: boolean;
+  impactChecked: boolean;
+}
+
+export interface FaenaDemoState {
+  floors: FloorStatus[];
+  wasteTotalsKg: WasteTotalsKg;
+  events: OperationEvent[];
+  roiParams: RoiParams;
+  tourProgress: TourProgress;
+}
+
+export interface DispatchPayload {
+  floorNumber: number;
+  materialType: Exclude<MaterialType, 'Residuos Separados'>;
+  supervisor: string;
+  guideCode: string;
 }
 
 export interface RoiInputs {

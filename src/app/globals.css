@@ -29,3 +29,10 @@ body {
 ::-webkit-scrollbar-thumb:hover {
   background: #475569;
 }
+
+@media print {
+  body {
+    background: #ffffff !important;
+    color: #0f172a !important;
+  }
+}

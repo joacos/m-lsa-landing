@@ -1,14 +1,16 @@
 "use client";
 
 import React from "react";
-import { Clock, ShieldCheck, QrCode, TrendingUp, ArrowRight, Play, CheckCircle2 } from "lucide-react";
+import Link from "next/link";
+import { Clock, ShieldCheck, QrCode, TrendingUp, ArrowRight, Play, CheckCircle2, Compass } from "lucide-react";
 import { MLSA_SYSTEM_DATA } from "@/data/mlsa-content";
+import { useFaena } from "@/components/FaenaContext";
 
-interface HeroSectionProps {
-  onOpenPilot: () => void;
-}
+export const HeroSection: React.FC = () => {
+  const { state, openTour } = useFaena();
+  const activeCarts = state.floors.filter((f) => f.moduleState !== "EMPTY").length;
+  const totalRecoveredKg = Object.values(state.wasteTotalsKg).reduce((sum, kg) => sum + kg, 0);
 
-export const HeroSection: React.FC<HeroSectionProps> = ({ onOpenPilot }) => {
   return (
     <section className="relative overflow-hidden pt-12 pb-20 md:pt-20 md:pb-28">
       {/* Background Glows */}
@@ -20,50 +22,73 @@ export const HeroSection: React.FC<HeroSectionProps> = ({ onOpenPilot }) => {
         <div className="flex justify-center">
           <div className="inline-flex items-center gap-2 rounded-full border border-brand-emerald/30 bg-brand-emerald/10 px-4 py-1.5 text-xs sm:text-sm font-medium text-brand-emerald shadow-inner">
             <span className="flex h-2 w-2 rounded-full bg-brand-emerald animate-pulse" />
-            <span>Sistema 4+1 INACAP Unidad 3 — Faena Cero Residuos</span>
+            <span>Proyecto 4+1 INACAP Unidad 3 — Obra Sin Escombros</span>
           </div>
         </div>
 
         {/* Main Title & Subtitle */}
         <div className="mt-8 text-center max-w-4xl mx-auto">
           <h1 className="text-3xl font-extrabold tracking-tight text-white sm:text-5xl lg:text-6xl sm:leading-tight">
-            Optimiza la Milla Intermedia y{" "}
+            Ordena el Abastecimiento en CADA PISO y{" "}
             <span className="bg-gradient-to-r from-brand-emerald via-teal-300 to-brand-amber bg-clip-text text-transparent">
-              Elimina los Residuos en Faena
+              Elimina los Escombros en Obra
             </span>{" "}
-            con Logística Modular Circular
+            con Módulos Reutilizables
           </h1>
           <p className="mt-6 text-base sm:text-xl text-slate-300 leading-relaxed max-w-3xl mx-auto">
-            El primer sistema híbrido físico-digital que acerca insumos a tus cuadrillas en piso y gestiona los excedentes de obra en el flujo de retorno. Cero mermas por intemperie, cero pasillos bloqueados.
+            El primer sistema de carros cerrados con código QR que lleva materiales directo a tus cuadrillas y retira los despuntes en el viaje de vuelta. Cero pérdidas por lluvia, cero pasillos tapados.
           </p>
 
           {/* CTAs */}
           <div className="mt-10 flex flex-col sm:flex-row items-center justify-center gap-4">
-            <a
-              href="#calculadora"
+            <button
+              type="button"
+              onClick={openTour}
               className="w-full sm:w-auto inline-flex items-center justify-center gap-2 rounded-xl bg-brand-emerald px-7 py-3.5 text-base font-bold text-slate-950 transition-all hover:bg-emerald-400 hover:shadow-xl hover:shadow-brand-emerald/25 active:scale-95"
             >
-              Simular Ahorro y Piloto
-              <ArrowRight className="h-5 w-5" />
-            </a>
-            <a
-              href="#simulador"
+              <Compass className="h-5 w-5" />
+              Iniciar Tour Guiado (4 Pasos)
+            </button>
+            <Link
+              href="/simulador"
               className="w-full sm:w-auto inline-flex items-center justify-center gap-2 rounded-xl border border-slate-700 bg-slate-900/80 px-7 py-3.5 text-base font-semibold text-slate-200 transition-all hover:border-slate-500 hover:bg-slate-800"
             >
               <Play className="h-4 w-4 fill-slate-200" />
-              Ver Demostración Interactiva
-            </a>
+              Ver Simulador del Edificio
+            </Link>
+            <Link
+              href="/calculadora"
+              className="w-full sm:w-auto inline-flex items-center justify-center gap-2 rounded-xl border border-brand-emerald/30 bg-brand-emerald/10 px-6 py-3.5 text-base font-semibold text-brand-emerald transition-all hover:bg-brand-emerald/20"
+            >
+              Calcular Ahorro
+              <ArrowRight className="h-4 w-4" />
+            </Link>
+          </div>
+
+          {/* Live connected site indicator */}
+          <div className="mt-5 flex justify-center">
+            <div className="inline-flex flex-wrap items-center justify-center gap-3 rounded-full border border-slate-800 bg-slate-900/80 px-4 py-1.5 text-xs text-slate-300">
+              <span className="inline-flex items-center gap-1.5 text-brand-emerald font-semibold">
+                <span className="h-2 w-2 rounded-full bg-brand-emerald animate-pulse" />
+                Obra en vivo:
+              </span>
+              <span>{activeCarts}/12 pisos con carro activo</span>
+              <span className="text-slate-600">•</span>
+              <span className="font-mono text-brand-amber font-semibold">
+                {totalRecoveredKg.toLocaleString("es-CL")} kg recuperados
+              </span>
+            </div>
           </div>
 
           {/* Fast assurance checks */}
           <div className="mt-6 flex flex-wrap items-center justify-center gap-6 text-xs text-slate-400">
             <span className="inline-flex items-center gap-1.5">
               <CheckCircle2 className="h-4 w-4 text-brand-emerald" />
-              $0 Inversión CapEx (Suscripción OpEx)
+              $0 en Compra de Equipos (Arriendo Mensual)
             </span>
             <span className="inline-flex items-center gap-1.5">
               <CheckCircle2 className="h-4 w-4 text-brand-emerald" />
-              Cumple D.S. 594 & Ley REP N° 20.920
+              Cumple D.S. 594 y Ley REP N° 20.920
             </span>
             <span className="inline-flex items-center gap-1.5">
               <CheckCircle2 className="h-4 w-4 text-brand-emerald" />

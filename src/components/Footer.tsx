@@ -1,7 +1,14 @@
-"use client";
-
 import React from "react";
-import { Boxes, ShieldCheck, Heart, ExternalLink } from "lucide-react";
+import Link from "next/link";
+import { Boxes } from "lucide-react";
+
+const PLATFORM_LINKS = [
+  { href: "/flujo", label: "Flujo Doble (Subida / Bajada)" },
+  { href: "/simulador", label: "Simulador de Edificio (12P)" },
+  { href: "/sistema", label: "Carros Galvanizados Faena Limpia" },
+  { href: "/calculadora", label: "Calculadora Ahorro ($850k/mes)" },
+  { href: "/ley-rep", label: "Trazabilidad Ley REP" },
+];
 
 export const Footer: React.FC = () => {
   return (
@@ -10,18 +17,20 @@ export const Footer: React.FC = () => {
         <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
           {/* Brand Col */}
           <div className="md:col-span-2 space-y-4">
-            <div className="flex items-center gap-3">
+            <Link href="/" className="inline-flex items-center gap-3 group">
               <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-brand-emerald text-slate-950 font-black">
                 <Boxes className="h-5 w-5" />
               </div>
-              <span className="text-xl font-black text-white">M-LSA</span>
+              <span className="text-xl font-black text-white group-hover:text-brand-emerald transition-colors">
+                Faena Limpia
+              </span>
               <span className="rounded bg-brand-emerald/10 px-2 py-0.5 text-xs font-mono font-bold text-brand-emerald border border-brand-emerald/30">
                 INACAP Unidad 3
               </span>
-            </div>
+            </Link>
 
             <p className="text-xs text-slate-400 max-w-md leading-relaxed">
-              Módulos Logísticos Satélite de Acopio. Sistema circular de doble utilidad para optimización de la milla intermedia y logística inversa de RCD en proyectos de edificación en altura.
+              Sistema de carros cerrados en obra para llevar materiales directo al piso y retirar despuntes y escombros de vuelta, sin ensuciar pasillos.
             </p>
 
             <div className="flex flex-wrap items-center gap-4 text-[11px] text-slate-500 font-mono">
@@ -42,31 +51,13 @@ export const Footer: React.FC = () => {
               Plataforma
             </h4>
             <ul className="mt-3 space-y-2 text-xs">
-              <li>
-                <a href="#flujo-dual" className="hover:text-brand-emerald transition-colors">
-                  Flujo Dual (UP / DOWN)
-                </a>
-              </li>
-              <li>
-                <a href="#simulador" className="hover:text-brand-emerald transition-colors">
-                  Simulador de Edificio (12P)
-                </a>
-              </li>
-              <li>
-                <a href="#caracteristicas" className="hover:text-brand-emerald transition-colors">
-                  Hardware Galvanizado M-LSA
-                </a>
-              </li>
-              <li>
-                <a href="#calculadora" className="hover:text-brand-emerald transition-colors">
-                  Calculadora ROI ($850k OpEx)
-                </a>
-              </li>
-              <li>
-                <a href="#sostenibilidad" className="hover:text-brand-emerald transition-colors">
-                  Trazabilidad Ley REP
-                </a>
-              </li>
+              {PLATFORM_LINKS.map((item) => (
+                <li key={item.href}>
+                  <Link href={item.href} className="hover:text-brand-emerald transition-colors">
+                    {item.label}
+                  </Link>
+                </li>
+              ))}
             </ul>
           </div>
 
@@ -76,18 +67,18 @@ export const Footer: React.FC = () => {
               Proyecto Formativo
             </h4>
             <p className="mt-3 text-xs text-slate-400 leading-normal">
-              Desarrollado bajo la metodología <strong>4+1 INACAP</strong> para la resolución de problemáticas críticas de productividad y sustentabilidad en la industria de la construcción.
+              Desarrollado bajo la metodología <strong>4+1 INACAP</strong> para resolver problemas reales de orden, productividad y sustentabilidad en la construcción chilena.
             </p>
             <div className="mt-4 rounded-xl bg-slate-900/90 border border-slate-800 p-3 text-[11px] text-slate-400">
-              <span className="text-brand-emerald font-semibold">Vibe-Coding Ready:</span>
-              <p className="mt-0.5 text-slate-400">Next.js App Router, Tailwind CSS & Framer Motion.</p>
+              <span className="text-brand-emerald font-semibold">Piloto en Terreno:</span>
+              <p className="mt-0.5 text-slate-400">Despacho en 48 hrs para obras activas en Chile.</p>
             </div>
           </div>
         </div>
 
         {/* Bottom Bar */}
         <div className="mt-12 pt-6 border-t border-slate-800/80 flex flex-col sm:flex-row items-center justify-between text-xs text-slate-500 gap-4">
-          <p>© {new Date().getFullYear()} Sistema M-LSA. Todos los derechos reservados.</p>
+          <p>© {new Date().getFullYear()} Faena Limpia. Todos los derechos reservados.</p>
           <p className="flex items-center gap-1">
             Diseñado para obra limpia y cero mermas.
           </p>

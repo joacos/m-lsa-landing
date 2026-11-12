@@ -1,18 +1,19 @@
 import type { Metadata } from "next";
 import "./globals.css";
+import { SiteShell } from "@/components/SiteShell";
 
 export const metadata: Metadata = {
-  title: "M-LSA | Sistema de Logística Modular Circular & Trazabilidad RCD",
+  title: "Faena Limpia | Logística Circular en Obra y Trazabilidad de Residuos",
   description:
-    "Optimiza la milla intermedia y elimina los residuos en faena de edificación en altura. Flujo bidireccional de insumos JIT con QR y logística inversa de mermas bajo Ley REP N° 20.920.",
+    "Ordena el abastecimiento en piso y elimina los escombros en edificios en construcción. Subida de materiales con código QR y retiro separado bajo Ley REP N° 20.920.",
   keywords: [
-    "M-LSA",
-    "Logística circular construcción",
+    "Faena Limpia",
+    "Logística construcción Chile",
     "Ley REP 20920",
     "Sinader",
-    "RCD edificación",
+    "Residuos de construcción",
     "INACAP",
-    "Acopio satélite",
+    "Bodega en piso",
   ],
 };
 
@@ -22,9 +23,9 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="es" className="scroll-smooth">
+    <html lang="es">
       <body className="bg-brand-dark text-slate-100 min-h-screen antialiased selection:bg-brand-emerald selection:text-slate-950">
-        {children}
+        <SiteShell>{children}</SiteShell>
       </body>
     </html>
   );
