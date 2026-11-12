@@ -4,9 +4,8 @@ import React, { useState } from "react";
 import Link from "next/link";
 import { QrCode, Smartphone, ArrowRight, Clock } from "lucide-react";
 import { useFaena } from "@/components/FaenaContext";
-import { MaterialType } from "@/types/mlsa";
+import { SupplyMaterial } from "@/types/mlsa";
 
-type SupplyMaterial = Exclude<MaterialType, "Residuos Separados">;
 
 const PRESET_GUIDES: { code: string; material: SupplyMaterial; label: string }[] = [
   { code: "GD-4821", material: "Volcanita / Yeso", label: "GD-4821 · Volcanita / Yeso" },

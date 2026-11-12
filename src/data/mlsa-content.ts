@@ -310,6 +310,64 @@ export const FLOW_STAGES = [
   },
 ];
 
+/**
+ * Simulador, modo guiado: un piso y un carro en 5 pasos. Cada paso dice qué pasa, cómo era antes y qué se gana.
+ * `minutes`/`kg` se suman al contador del recorrido (mismas cifras que `kpis`: 60 → 8 min, 180 kg por viaje).
+ */
+export const GUIDED_STEPS: {
+  view: "piso" | "faena";
+  state: FloorStatus["moduleState"];
+  title: string;
+  now: string;
+  before: string;
+  win: string;
+  minutes?: number;
+  kg?: number;
+}[] = [
+  {
+    view: "faena",
+    state: "DELIVERING_SUPPLIES",
+    title: "Llega el material y portería escanea el QR",
+    now: "El camión descarga en el patio. Portería escanea la guía con el celular y el carro queda asignado al Piso 7.",
+    before: "La guía se archiva en papel y nadie sabe a qué piso fue el material.",
+    win: "Despacho registrado con QR",
+  },
+  {
+    view: "piso",
+    state: "DELIVERING_SUPPLIES",
+    title: "El carro sube cerrado por el montacargas",
+    now: "Llega al piso por el montacargas. Al ir cerrado, el material no se moja ni se rompe en el camino.",
+    before: "El material espera a la intemperie y hasta un 6% se pierde por clima y golpes.",
+    win: "Material protegido (menos de 2% de pérdida)",
+  },
+  {
+    view: "piso",
+    state: "STORED_SATELITE",
+    title: "Queda en la Zona A, junto al montacargas",
+    now: "La cuadrilla saca el material directo del carro, siempre en el mismo lugar del plano.",
+    before: "El maestro baja a bodega y pierde hasta 60 minutos al día buscando.",
+    win: "52 minutos ahorrados por cuadrilla",
+    minutes: 52,
+  },
+  {
+    view: "piso",
+    state: "COLLECTING_WASTE",
+    title: "El mismo carro se llena con desechos separados",
+    now: "Cuando se vacía, pasa a la Zona B y recibe despuntes de madera en su casillero. Nada queda en el pasillo.",
+    before: "Escombro mezclado en pasillos y escaleras, con riesgo de caídas.",
+    win: "Pasillo despejado (D.S. 594)",
+  },
+  {
+    view: "faena",
+    state: "COLLECTING_WASTE",
+    title: "Baja, se pesa y se apila en el patio",
+    now: "El montacargas no baja vacío: el carro trae 180 kg que se pesan en la balanza y se apilan por tipo.",
+    before: "El montacargas bajaba vacío y el escombro salía mezclado, sin respaldo.",
+    win: "180 kg con respaldo Ley REP",
+    kg: 180,
+  },
+];
+
 /** Home: el problema en obra vs. lo que cambia con el sistema (mismas cifras que `kpis`). */
 export const PROBLEM_SOLUTION = {
   sin: [
@@ -431,7 +489,7 @@ export const CYCLE_STEPS: Record<
     short: "Material en piso",
     status: "Material",
     where: (fl) =>
-      `El carro está en la Zona A con ${fl.materialType}. La cuadrilla saca desde ahí y el pasillo queda libre. Cuando se vacíe, elige qué desecho cargar.`,
+      `El carro está en la Zona A con ${fl.materialType}. La cuadrilla va sacando desde ahí y el pasillo queda libre. Cuando se vacíe, pasa a la Zona B a recibir desechos.`,
     action: "Cargar desechos en el carro",
   },
   COLLECTING_WASTE: {
@@ -445,8 +503,9 @@ export const CYCLE_STEPS: Record<
   EMPTY: {
     stepIndex: 4, // ciclo completo: los 4 pasos quedan marcados
     short: "Baja y pesa",
-    status: "Sin carro",
-    where: () => "Este piso no tiene carro: las dos zonas están libres. Pide uno nuevo con material.",
+    status: "Ciclo listo",
+    where: () =>
+      "Ciclo completo: el carro bajó con los desechos y se pesó en el patio. Las dos zonas quedaron libres; elige qué material subir en el próximo carro.",
     action: "Pedir carro con material",
   },
 };

@@ -5,9 +5,17 @@ import type {
   FloorStatus,
   OperationEvent,
   RoiParams,
+  SupplyMaterial,
   WasteTotalsKg,
   WasteType,
 } from "../types/mlsa";
+
+/** Cuadrilla que recibe cada material al reponer un carro. */
+export const MATERIAL_CREW: Record<SupplyMaterial, string> = {
+  "Volcanita / Yeso": "M. González (Tabiquería)",
+  "Madera / Moldajes": "E. Fuentes (Estructuras)",
+  "Ferretería / Pernos": "C. Morales (Instalaciones)",
+};
 
 export const RETURN_LOAD_KG = 180;
 export const MAX_EVENTS = 12;
@@ -94,7 +102,8 @@ export function applyCycleAdvance(
   prev: FaenaDemoState,
   floorNumber: number,
   selectedWaste: WasteType,
-  timeLabel: string
+  timeLabel: string,
+  nextMaterial: SupplyMaterial = "Volcanita / Yeso"
 ): FaenaDemoState {
   const current = prev.floors.find((f) => f.floorNumber === floorNumber);
   if (!current) return prev;
@@ -188,10 +197,10 @@ export function applyCycleAdvance(
             ...f,
             activeModuleId: moduleId,
             moduleState: "DELIVERING_SUPPLIES",
-            materialType: "Volcanita / Yeso",
+            materialType: nextMaterial,
             wasteType: undefined,
             fillLevelPercentage: 100,
-            supervisor: "M. González (Tabiquería)",
+            supervisor: MATERIAL_CREW[nextMaterial],
             qrToken: buildToken(floorNumber, "SUP"),
             lastUpdated: `Subida solicitada (${timeLabel})`,
           }
@@ -203,7 +212,7 @@ export function applyCycleAdvance(
       floorNumber,
       moduleId,
       action: "Reposición a piso",
-      detail: `Carro asignado con Volcanita / Yeso al Piso ${floorNumber}`,
+      detail: `Carro asignado con ${nextMaterial} al Piso ${floorNumber}`,
       kind: "SUPPLY",
     };
   }

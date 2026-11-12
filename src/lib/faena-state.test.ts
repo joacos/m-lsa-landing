@@ -75,6 +75,11 @@ test("full round-trip updates floor state, tour progress, and Ley REP waste tota
   assert.equal(weighed.floors[0].moduleState, "EMPTY");
   assert.equal(weighed.tourProgress.wasteReturned, true);
   assert.equal(weighed.wasteTotalsKg["Despuntes Metálicos"], 500 + RETURN_LOAD_KG);
+
+  const restocked = applyCycleAdvance(weighed, 2, "Despuntes Metálicos", "12:00", "Madera / Moldajes");
+  assert.equal(restocked.floors[0].moduleState, "DELIVERING_SUPPLIES");
+  assert.equal(restocked.floors[0].materialType, "Madera / Moldajes");
+  assert.equal(restocked.floors[0].supervisor, "E. Fuentes (Estructuras)");
 });
 
 test("applyCartMove transfers cart state cleanly between floors", () => {

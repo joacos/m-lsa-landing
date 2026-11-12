@@ -1,7 +1,7 @@
 "use client";
 
 import React, { createContext, useCallback, useContext, useEffect, useState } from "react";
-import { DispatchPayload, FaenaDemoState, RoiParams, WasteType } from "@/types/mlsa";
+import { DispatchPayload, FaenaDemoState, RoiParams, SupplyMaterial, TourProgress, WasteType } from "@/types/mlsa";
 import {
   DEFAULT_EVENTS,
   DEFAULT_ROI_PARAMS,
@@ -37,11 +37,12 @@ interface FaenaContextValue {
   openTour: () => void;
   closeTour: () => void;
   dispatchFromGate: (payload: DispatchPayload) => string;
-  advanceFloorCycle: (floorNumber: number, wasteType?: WasteType) => void;
+  advanceFloorCycle: (floorNumber: number, wasteType?: WasteType, nextMaterial?: SupplyMaterial) => void;
   moveCartBetweenFloors: (fromFloor: number, toFloor: number) => void;
   setFloorCount: (count: number) => void;
   setRoiParams: (params: RoiParams) => void;
   markImpactChecked: () => void;
+  markTourStep: (key: keyof TourProgress) => void;
   resetDemo: () => void;
 }
 
@@ -104,9 +105,9 @@ export function FaenaProvider({ children }: { children: React.ReactNode }) {
   }, []);
 
   const advanceFloorCycle = useCallback(
-    (floorNumber: number, selectedWaste: WasteType = "Despuntes de Madera") => {
+    (floorNumber: number, selectedWaste: WasteType = "Despuntes de Madera", nextMaterial?: SupplyMaterial) => {
       const timeLabel = formatNow();
-      setState((prev) => applyCycleAdvance(prev, floorNumber, selectedWaste, timeLabel));
+      setState((prev) => applyCycleAdvance(prev, floorNumber, selectedWaste, timeLabel, nextMaterial));
     },
     []
   );
@@ -125,15 +126,12 @@ export function FaenaProvider({ children }: { children: React.ReactNode }) {
     setState((prev) => ({ ...prev, roiParams }));
   }, []);
 
-  const markImpactChecked = useCallback(() => {
-    setState((prev) => {
-      if (prev.tourProgress.impactChecked) return prev;
-      return {
-        ...prev,
-        tourProgress: { ...prev.tourProgress, impactChecked: true },
-      };
-    });
+  const markTourStep = useCallback((key: keyof TourProgress) => {
+    setState((prev) =>
+      prev.tourProgress[key] ? prev : { ...prev, tourProgress: { ...prev.tourProgress, [key]: true } }
+    );
   }, []);
+  const markImpactChecked = useCallback(() => markTourStep("impactChecked"), [markTourStep]);
 
   const resetDemo = useCallback(() => {
     setState(buildSeedState());
@@ -157,6 +155,7 @@ export function FaenaProvider({ children }: { children: React.ReactNode }) {
         setFloorCount,
         setRoiParams,
         markImpactChecked,
+        markTourStep,
         resetDemo,
       }}
     >

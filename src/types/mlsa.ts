@@ -10,6 +10,8 @@ export type MaterialType =
   | 'Ferretería / Pernos'
   | 'Residuos Separados';
 
+export type SupplyMaterial = Exclude<MaterialType, 'Residuos Separados'>;
+
 export type WasteType =
   | 'Despuntes de Madera'
   | 'Despuntes Metálicos'

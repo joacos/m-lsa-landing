@@ -36,7 +36,8 @@ Scripts: `dev`, `build`, `start`, `typecheck` (= `tsc --noEmit`, **pasa limpio**
 src/app/layout.tsx          metadata SEO + <SiteShell>
 src/app/page.tsx            /            → HeroSection
 src/app/flujo/              /flujo       → DualFlowShowcase   (subida/bajada paso a paso)
-src/app/simulador/          /simulador   → BuildingSimulator  (consola de pisos + 3 columnas: elegir piso · plano [piso | faena] · "qué hacer ahora" con un solo botón)
+src/app/simulador/          /simulador   → BuildingSimulator: modo "Recorrido guiado" (default, GuidedCycle) | "Explorar la torre" (consola de pisos + 3 columnas: elegir piso · plano [piso | faena] · "qué hacer ahora" con un solo botón)
+src/components/GuidedCycle  recorrido de 5 pasos (`GUIDED_STEPS` en data: qué pasa / "sin Faena Limpia" / lo que se gana + contadores min y kg) sobre un piso ficticio (P7 de 12); no toca la torre, solo marca floorDelivered/wasteReturned del tour
 src/app/sistema/            /sistema     → FeatureBento (+ GateQrAppDemo #porteria, CartInteractiveView)
 src/app/calculadora/        /calculadora → RoiCalculator
 src/app/ley-rep/            /ley-rep     → SustainabilitySection (totales kg, códigos Sinader, imprimir)
@@ -61,8 +62,10 @@ Cada `page.tsx` es server component de ~10 líneas que solo exporta `metadata` y
 
 Ciclo de un carro (`applyCycleAdvance`, máquina de estados):
 ```
-DELIVERING_SUPPLIES(100%) → STORED_SATELITE(65%) → COLLECTING_WASTE(85%, wasteType) → EMPTY(0%, +180 kg a wasteTotalsKg) → DELIVERING_SUPPLIES(Volcanita, M. González hardcodeado)
+DELIVERING_SUPPLIES(100%) → STORED_SATELITE(65%) → COLLECTING_WASTE(85%, wasteType) → EMPTY(0%, +180 kg a wasteTotalsKg) → DELIVERING_SUPPLIES(nextMaterial, cuadrilla de MATERIAL_CREW)
 ```
+- `applyCycleAdvance(prev, piso, waste, time, nextMaterial = Volcanita)`; `SupplyMaterial` (tipos) = material sin "Residuos Separados".
+- Contexto: `markTourStep(key)` genérico (`markImpactChecked` lo usa).
 - `applyGateDispatch(prev, {floorNumber, materialType, supervisor, guideCode}, time, suffix)` → piso a DELIVERING, token `QR-FLxx-SUP-nnnn`.
 - `applyCartMove(prev, from, to, time)` → intercambia el contenido de dos slots (swap), conserva `activeModuleId`.
 - Tokens: `QR-FL{piso 2 dígitos}-{SUP|SAT|WST|EMP}-{4 dígitos}`; módulos `FL-{piso}{A|B|C}`.
@@ -94,6 +97,5 @@ Sliders: pisos 5–30, trabajadores 20–200. Defaults 14 pisos / 65 trabajadore
 ## 8. Deuda / gotchas conocidos
 - Tests **no corren con ningún script**: `node --test src/lib/faena-state.test.ts` falla por import sin extensión (`./faena-state`). Opciones: `npx tsx --test …` o agregar script `"test"`.
 - `dispatchFromGate` (contexto) arma el token duplicando `buildToken` (consistente porque pasa el mismo suffix).
-- Paso EMPTY→DELIVERING ignora material/supervisor reales (hardcode Volcanita / M. González).
 - Sin backend, sin auth, sin analytics, sin `.env`. Formulario de piloto no envía datos a ningún lado.
 - `.next/` y `tsconfig.tsbuildinfo` presentes localmente (ignorados por git).
