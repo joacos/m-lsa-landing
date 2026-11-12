@@ -16,6 +16,9 @@ export type WasteType =
   | 'Cartón / Film Embalaje'
   | 'Escombro Limpio';
 
+/** Variante de planta de un piso: el piso 1 y el último son distintos; el resto cambia por tramo de altura. */
+export type FloorLayoutId = 'acceso' | 'tipoA' | 'tipoB' | 'tipoC' | 'atico';
+
 export interface FloorStatus {
   floorNumber: number;
   activeModuleId: string | null;

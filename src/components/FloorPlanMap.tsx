@@ -2,7 +2,8 @@
 
 import React from "react";
 import { motion } from "framer-motion";
-import { FLOOR_PLAN } from "@/data/mlsa-content";
+import { FLOOR_LAYOUTS, FLOOR_PLAN, PlanRoom } from "@/data/mlsa-content";
+import { floorLayoutId } from "@/lib/faena-state";
 import { FloorStatus } from "@/types/mlsa";
 
 const GREEN = "#00b84a";
@@ -12,6 +13,8 @@ const ORANGE_DARK = "#c2410c";
 const INK = "#14213d";
 const YELLOW = "#ffd60a";
 const CORRIDOR_Y = 130;
+
+const ROOM_FILL: Record<PlanRoom["kind"], string> = { recinto: "#fffdf8", exterior: "#e0f2fe", acceso: "#e2e8f0" };
 
 type Rect = { x: number; y: number; w: number; h: number };
 
@@ -72,11 +75,12 @@ const Bay = ({
 };
 
 /**
- * Plano de planta del piso seleccionado: Zona A (materiales), Zona B (desechos por tipo), montacargas,
- * frente de trabajo y pasillo. El carro se mueve a la zona que corresponde a su estado.
+ * Plano de planta del piso seleccionado. El núcleo y las zonas A/B son iguales en todos los pisos (FLOOR_PLAN);
+ * los recintos cambian según la variante de planta del piso (FLOOR_LAYOUTS). El carro se mueve a la zona de su estado.
  */
-export function FloorPlanMap({ floor }: { floor: FloorStatus }) {
-  const { lift, materials, waste, workFronts, materialSlots, wasteSlots } = FLOOR_PLAN;
+export function FloorPlanMap({ floor, totalFloors }: { floor: FloorStatus; totalFloors: number }) {
+  const { lift, stairs, materials, waste, materialSlots, wasteSlots } = FLOOR_PLAN;
+  const layout = FLOOR_LAYOUTS[floorLayoutId(floor.floorNumber, totalFloors)];
   const state = floor.moduleState;
   const matIdx = Math.max(0, materialSlots.findIndex((s) => s.key === floor.materialType));
   const wasteIdx = Math.max(0, wasteSlots.findIndex((s) => s.key === floor.wasteType));
@@ -90,7 +94,9 @@ export function FloorPlanMap({ floor }: { floor: FloorStatus }) {
 
   const isWaste = state === "COLLECTING_WASTE";
   const cart = state === "STORED_SATELITE" ? matSlot : isWaste ? wasteSlot : liftCenter;
-  const work = workFronts[floor.floorNumber % workFronts.length];
+  // Frente de trabajo: un recinto amplio del piso. ponytail: rota por número de piso solo para la demo.
+  const workable = layout.rooms.filter((r) => r.kind === "recinto" && r.w >= 90);
+  const work = workable[floor.floorNumber % workable.length];
   // Ruta punteada: del montacargas a la Zona A al subir; de la Zona B al montacargas al bajar.
   const routeTo = state === "DELIVERING_SUPPLIES" ? matSlot : isWaste ? wasteSlot : null;
 
@@ -98,7 +104,7 @@ export function FloorPlanMap({ floor }: { floor: FloorStatus }) {
     <svg
       viewBox="0 0 480 260"
       role="img"
-      aria-label={`Plano del piso ${floor.floorNumber}: Zona A de materiales junto al montacargas, Zona B de desechos separados por tipo, pasillo despejado y frente de trabajo de la cuadrilla`}
+      aria-label={`Plano del piso ${floor.floorNumber} (${layout.name}): Zona A de materiales junto al montacargas, Zona B de desechos separados por tipo, pasillo despejado y frente de trabajo de la cuadrilla`}
       className="w-full rounded-2xl border-2 border-brand-ink bg-white"
     >
       {/* losa y pasillo */}
@@ -108,39 +114,67 @@ export function FloorPlanMap({ floor }: { floor: FloorStatus }) {
         PASILLO SIEMPRE DESPEJADO
       </text>
 
-      {/* recintos */}
-      <path d="M10 110 H70 M410 110 H470 M10 150 H470 M125 150 V250 M240 150 V250 M355 150 V250" stroke={INK} strokeWidth={2.5} fill="none" />
-      {workFronts
-        .filter((room) => room !== work)
-        .map((room) => (
-          <text key={room.x} x={room.x + room.w / 2} y={room.y + 54} textAnchor="middle" fontSize={7} fontWeight={700} fill="#cbd5e1" letterSpacing={1.5}>
-            RECINTO
-          </text>
-        ))}
-      <rect x={work.x} y={work.y} width={work.w} height={work.h} fill={YELLOW} fillOpacity={0.35} stroke={INK} strokeWidth={2.5} strokeDasharray="6 4" />
-      <text x={work.x + work.w / 2} y={work.y + 22} textAnchor="middle" fontSize={8} fontWeight={900} fill={INK}>
-        FRENTE DE TRABAJO
-      </text>
-      <text x={work.x + work.w / 2} y={work.y + 34} textAnchor="middle" fontSize={6.5} fill="#475569">
-        {floor.supervisor.replace(/^.*\((.*)\)$/, "$1")}
-      </text>
-      {[-14, 14].map((dx) => (
-        <g key={dx}>
-          <circle cx={work.x + work.w / 2 + dx} cy={work.y + 60} r={7} fill={YELLOW} stroke={INK} strokeWidth={2} />
-          <circle cx={work.x + work.w / 2 + dx} cy={work.y + 60} r={3} fill="#fcd9b6" stroke={INK} strokeWidth={1} />
-        </g>
-      ))}
+      {/* recintos de esta planta */}
+      {layout.rooms.map((room) => {
+        const isWork = room === work;
+        return (
+          <g key={`${room.x}-${room.y}`}>
+            <rect
+              x={room.x}
+              y={room.y}
+              width={room.w}
+              height={room.h}
+              fill={isWork ? YELLOW : ROOM_FILL[room.kind]}
+              fillOpacity={isWork ? 0.35 : 1}
+              stroke={INK}
+              strokeWidth={2.5}
+              strokeDasharray={room.kind === "exterior" ? "6 4" : undefined}
+            />
+            <text
+              x={room.x + room.w / 2}
+              y={room.y + (isWork ? 34 : room.h / 2 + 3)}
+              textAnchor="middle"
+              fontSize={6.5}
+              fontWeight={room.kind === "recinto" && !isWork ? 600 : 800}
+              fill={isWork ? "#475569" : room.kind === "recinto" ? "#94a3b8" : INK}
+            >
+              {isWork ? floor.supervisor.replace(/^.*\((.*)\)$/, "$1") : room.label}
+            </text>
+            {isWork && (
+              <>
+                <text x={room.x + room.w / 2} y={room.y + 22} textAnchor="middle" fontSize={8} fontWeight={900} fill={INK}>
+                  FRENTE DE TRABAJO
+                </text>
+                {[-14, 14].map((dx) => (
+                  <g key={dx}>
+                    <circle cx={room.x + room.w / 2 + dx} cy={room.y + 60} r={7} fill={YELLOW} stroke={INK} strokeWidth={2} />
+                    <circle cx={room.x + room.w / 2 + dx} cy={room.y + 60} r={3} fill="#fcd9b6" stroke={INK} strokeWidth={1} />
+                  </g>
+                ))}
+              </>
+            )}
+          </g>
+        );
+      })}
 
       {/* núcleo: montacargas + escalera */}
       <rect x={lift.x} y={lift.y} width={lift.w} height={lift.h} fill="#e0f2fe" stroke={INK} strokeWidth={2.5} />
       <text transform={`rotate(-90 ${lift.x + 12} ${liftCenter.y})`} x={lift.x + 12} y={liftCenter.y + 3} textAnchor="middle" fontSize={7} fontWeight={900} fill={INK}>
         MONTACARGAS
       </text>
-      <rect x={240} y={10} width={40} height={100} fill="#e2e8f0" stroke={INK} strokeWidth={2.5} />
-      {[22, 34, 46, 58, 70, 82, 94].map((y) => (
-        <line key={y} x1={244} y1={y} x2={276} y2={y} stroke="#94a3b8" strokeWidth={1.5} />
+      <rect x={stairs.x} y={stairs.y} width={stairs.w} height={stairs.h} fill="#e2e8f0" stroke={INK} strokeWidth={2.5} />
+      {[12, 24, 36, 48, 60, 72, 84].map((dy) => (
+        <line key={dy} x1={stairs.x + 4} y1={stairs.y + dy} x2={stairs.x + stairs.w - 4} y2={stairs.y + dy} stroke="#94a3b8" strokeWidth={1.5} />
       ))}
-      <text transform="rotate(-90 263 60)" x={263} y={63} textAnchor="middle" fontSize={7} fontWeight={800} fill="#475569">
+      <text
+        transform={`rotate(-90 ${stairs.x + 23} ${stairs.y + stairs.h / 2})`}
+        x={stairs.x + 23}
+        y={stairs.y + stairs.h / 2 + 3}
+        textAnchor="middle"
+        fontSize={7}
+        fontWeight={800}
+        fill="#475569"
+      >
         ESCALERA
       </text>
 
@@ -187,10 +221,6 @@ export function FloorPlanMap({ floor }: { floor: FloorStatus }) {
           {isWaste ? "▼" : "▲"}
         </text>
       </motion.g>
-
-      <text x={440} y={30} textAnchor="middle" fontSize={8} fontWeight={900} fill={INK}>
-        N ↑
-      </text>
     </svg>
   );
 }

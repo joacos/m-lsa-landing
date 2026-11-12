@@ -103,7 +103,7 @@ export const GateQrAppDemo: React.FC = () => {
           <div>
             <div className="flex items-center justify-between mb-1.5">
               <span className="text-[11px] font-mono uppercase text-brand-emeraldDark">
-                2. Elige piso destino (P1–P12)
+                2. Elige piso destino (P1–P{state.floors.length})
               </span>
               <span className="text-[10px] text-slate-500">Verde = libre</span>
             </div>

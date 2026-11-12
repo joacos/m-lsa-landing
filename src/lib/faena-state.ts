@@ -1,6 +1,7 @@
 import type {
   DispatchPayload,
   FaenaDemoState,
+  FloorLayoutId,
   FloorStatus,
   OperationEvent,
   RoiParams,
@@ -10,6 +11,8 @@ import type {
 
 export const RETURN_LOAD_KG = 180;
 export const MAX_EVENTS = 12;
+export const MIN_FLOORS = 3;
+export const MAX_FLOORS = 30;
 
 /** Builds a clean deep copy of initial Faena Limpia demo state. */
 export function createInitialFaenaState(seed: {
@@ -267,4 +270,33 @@ export function applyCartMove(
     floors,
     events: [moveEvent, ...prev.events].slice(0, MAX_EVENTS),
   };
+}
+
+/** Resizes the tower from the setup console: keeps existing floors, adds empty ones, drops those above `count`. */
+export function applyFloorCount(prev: FaenaDemoState, count: number, timeLabel: string): FaenaDemoState {
+  const total = Math.min(MAX_FLOORS, Math.max(MIN_FLOORS, Math.round(count)));
+  if (total === prev.floors.length) return prev;
+  const existing = new Map(prev.floors.map((f) => [f.floorNumber, f]));
+  const floors = Array.from({ length: total }, (_, i) => total - i).map(
+    (floorNumber): FloorStatus =>
+      existing.get(floorNumber) ?? {
+        floorNumber,
+        activeModuleId: null,
+        moduleState: "EMPTY",
+        materialType: "Volcanita / Yeso",
+        fillLevelPercentage: 0,
+        supervisor: "En espera de reposición",
+        qrToken: `QR-FL${String(floorNumber).padStart(2, "0")}-EMP-0000`,
+        lastUpdated: `Piso agregado (${timeLabel})`,
+      }
+  );
+  return { ...prev, floors };
+}
+
+/** Picks the plan variant of a floor: ground floor and top floor are unique; the rest split in thirds by height. */
+export function floorLayoutId(floorNumber: number, totalFloors: number): FloorLayoutId {
+  if (floorNumber <= 1) return "acceso";
+  if (floorNumber >= totalFloors) return "atico";
+  const third = Math.floor(((floorNumber - 2) * 3) / (totalFloors - 2));
+  return (["tipoA", "tipoB", "tipoC"] as const)[third];
 }

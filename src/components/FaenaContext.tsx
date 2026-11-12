@@ -9,8 +9,11 @@ import {
   MLSA_SYSTEM_DATA,
 } from "@/data/mlsa-content";
 import {
+  MAX_FLOORS,
+  MIN_FLOORS,
   applyCartMove,
   applyCycleAdvance,
+  applyFloorCount,
   applyGateDispatch,
   createInitialFaenaState,
 } from "@/lib/faena-state";
@@ -36,6 +39,7 @@ interface FaenaContextValue {
   dispatchFromGate: (payload: DispatchPayload) => string;
   advanceFloorCycle: (floorNumber: number, wasteType?: WasteType) => void;
   moveCartBetweenFloors: (fromFloor: number, toFloor: number) => void;
+  setFloorCount: (count: number) => void;
   setRoiParams: (params: RoiParams) => void;
   markImpactChecked: () => void;
   resetDemo: () => void;
@@ -63,7 +67,7 @@ export function FaenaProvider({ children }: { children: React.ReactNode }) {
       const raw = window.localStorage.getItem(STORAGE_KEY);
       if (raw) {
         const parsed = JSON.parse(raw) as Partial<FaenaDemoState>;
-        if (Array.isArray(parsed.floors) && parsed.floors.length === 12) {
+        if (Array.isArray(parsed.floors) && parsed.floors.length >= MIN_FLOORS && parsed.floors.length <= MAX_FLOORS) {
           setState((prev) => ({
             floors: parsed.floors ?? prev.floors,
             wasteTotalsKg: parsed.wasteTotalsKg ?? prev.wasteTotalsKg,
@@ -112,6 +116,11 @@ export function FaenaProvider({ children }: { children: React.ReactNode }) {
     setState((prev) => applyCartMove(prev, fromFloor, toFloor, timeLabel));
   }, []);
 
+  const setFloorCount = useCallback((count: number) => {
+    const timeLabel = formatNow();
+    setState((prev) => applyFloorCount(prev, count, timeLabel));
+  }, []);
+
   const setRoiParams = useCallback((roiParams: RoiParams) => {
     setState((prev) => ({ ...prev, roiParams }));
   }, []);
@@ -145,6 +154,7 @@ export function FaenaProvider({ children }: { children: React.ReactNode }) {
         dispatchFromGate,
         advanceFloorCycle,
         moveCartBetweenFloors,
+        setFloorCount,
         setRoiParams,
         markImpactChecked,
         resetDemo,

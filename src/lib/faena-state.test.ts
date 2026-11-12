@@ -4,6 +4,8 @@ import {
   RETURN_LOAD_KG,
   applyCartMove,
   applyCycleAdvance,
+  applyFloorCount,
+  floorLayoutId,
   applyGateDispatch,
   createInitialFaenaState,
 } from "./faena-state";
@@ -97,4 +99,24 @@ test("applyCartMove transfers cart state cleanly between floors", () => {
   assert.equal(floor5?.moduleState, "DELIVERING_SUPPLIES");
   assert.equal(floor5?.materialType, "Volcanita / Yeso");
   assert.equal(floor5?.activeModuleId, "FL-02A");
+});
+
+test("applyFloorCount keeps existing floors, adds empty ones and clamps the range", () => {
+  const initial = makeSeedState(); // floors 2 and 5 only
+  const grown = applyFloorCount(initial, 6, "10:00");
+  assert.deepEqual(grown.floors.map((f) => f.floorNumber), [6, 5, 4, 3, 2, 1]);
+  assert.equal(grown.floors.find((f) => f.floorNumber === 5)?.activeModuleId, "FL-05A");
+  assert.equal(grown.floors.find((f) => f.floorNumber === 6)?.moduleState, "EMPTY");
+
+  const shrunk = applyFloorCount(grown, 1, "10:05");
+  assert.equal(shrunk.floors.length, 3);
+  assert.equal(applyFloorCount(grown, 99, "10:06").floors.length, 30);
+  assert.equal(applyFloorCount(grown, 6, "10:07"), grown);
+});
+
+test("floorLayoutId makes the ground and top floors unique and varies the rest by height", () => {
+  assert.equal(floorLayoutId(1, 12), "acceso");
+  assert.equal(floorLayoutId(12, 12), "atico");
+  assert.deepEqual([2, 5, 6, 8, 9, 11].map((n) => floorLayoutId(n, 12)), ["tipoA", "tipoA", "tipoB", "tipoB", "tipoC", "tipoC"]);
+  assert.equal(floorLayoutId(2, 3), "tipoA");
 });

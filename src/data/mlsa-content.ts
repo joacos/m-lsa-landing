@@ -1,4 +1,5 @@
 import {
+  FloorLayoutId,
   FloorStatus,
   OperationEvent,
   RoiParams,
@@ -324,21 +325,17 @@ export const PROBLEM_SOLUTION = {
 };
 
 /**
- * Plano de planta tipo (esquemático) para orientar dónde se deja cada cosa en el piso.
- * Coordenadas en el viewBox 480×260 de FloorPlanMap; ajustar `lift`, `materials`, `waste`
- * y `workFronts` cuando se cargue el plano real de la obra.
+ * Planos esquemáticos del simulador. Coordenadas en el viewBox de cada componente
+ * (FloorPlanMap 480×260, SitePlanMap 480×300); ajustarlas cuando se cargue el plano real de la obra.
+ *
+ * `FLOOR_PLAN` es lo que NO cambia entre pisos: el núcleo (montacargas + escalera) y las dos zonas
+ * de acopio van en la misma vertical. Lo que sí cambia por piso está en `FLOOR_LAYOUTS`.
  */
 export const FLOOR_PLAN = {
   lift: { x: 200, y: 10, w: 40, h: 100 },
+  stairs: { x: 240, y: 10, w: 40, h: 100 },
   materials: { x: 70, y: 10, w: 130, h: 100 }, // Zona A, junto al montacargas
   waste: { x: 280, y: 10, w: 130, h: 100 }, // Zona B, al otro lado del núcleo
-  // ponytail: el frente de trabajo rota por número de piso solo para la demo; ligar a la programación real cuando exista
-  workFronts: [
-    { x: 10, y: 150, w: 115, h: 100 },
-    { x: 125, y: 150, w: 115, h: 100 },
-    { x: 240, y: 150, w: 115, h: 100 },
-    { x: 355, y: 150, w: 115, h: 100 },
-  ],
   materialSlots: [
     { key: "Volcanita / Yeso", label: "Volcanita" },
     { key: "Madera / Moldajes", label: "Madera" },
@@ -350,6 +347,70 @@ export const FLOOR_PLAN = {
     { key: "Cartón / Film Embalaje", label: "Cartón" },
     { key: "Escombro Limpio", label: "Escombro" },
   ],
+};
+
+export type PlanRoom = { x: number; y: number; w: number; h: number; label: string; kind: "recinto" | "exterior" | "acceso" };
+
+const sideRooms = (left: string, right: string, rightKind: PlanRoom["kind"] = "recinto"): PlanRoom[] => [
+  { x: 10, y: 10, w: 60, h: 100, label: left, kind: "recinto" },
+  { x: 410, y: 10, w: 60, h: 100, label: right, kind: rightKind },
+];
+const bottomRow = (widths: number[], label = "Recinto"): PlanRoom[] => {
+  let x = 10;
+  return widths.map((w) => ({ x: (x += w) - w, y: 150, w, h: 100, label, kind: "recinto" as const }));
+};
+
+/** Estructura de cada variante de planta (qué variante le toca a cada piso lo decide `floorLayoutId`). */
+export const FLOOR_LAYOUTS: Record<FloorLayoutId, { name: string; note: string; rooms: PlanRoom[] }> = {
+  acceso: {
+    name: "Planta de acceso",
+    note: "El piso más distinto: por aquí entran los carros desde portería y salen los desechos al patio de acopio.",
+    rooms: [
+      ...sideRooms("Bodega", "Sala basura"),
+      { x: 10, y: 150, w: 150, h: 100, label: "Acceso desde portería", kind: "acceso" },
+      { x: 160, y: 150, w: 150, h: 100, label: "Hall / locales", kind: "recinto" },
+      { x: 310, y: 150, w: 160, h: 100, label: "Salida al patio de acopio", kind: "acceso" },
+    ],
+  },
+  tipoA: {
+    name: "Planta tipo A",
+    note: "Pisos bajos: 4 recintos por piso.",
+    rooms: [...sideRooms("Recinto", "Recinto"), ...bottomRow([115, 115, 115, 115])],
+  },
+  tipoB: {
+    name: "Planta tipo B",
+    note: "Pisos medios: 3 recintos más amplios.",
+    rooms: [...sideRooms("Recinto", "Recinto"), ...bottomRow([153, 154, 153])],
+  },
+  tipoC: {
+    name: "Planta tipo C",
+    note: "Pisos altos: 5 recintos chicos y ducto técnico.",
+    rooms: [...sideRooms("Ducto", "Recinto"), ...bottomRow([92, 92, 92, 92, 92])],
+  },
+  atico: {
+    name: "Último piso",
+    note: "Sala de máquinas y terrazas: en terraza no se acopia nada.",
+    rooms: [
+      ...sideRooms("Sala máquinas", "Terraza", "exterior"),
+      ...bottomRow([150, 150]),
+      { x: 310, y: 150, w: 160, h: 100, label: "Terraza · sin acopio", kind: "exterior" },
+    ],
+  },
+};
+
+/** Plano general de la faena (emplazamiento): portería, torre, montacargas, balanza y patio de acopio de desechos. */
+export const SITE_PLAN = {
+  lot: { x: 10, y: 10, w: 460, h: 250 },
+  gateIn: { x: 40, y: 250, w: 50, h: 12 }, // acceso camiones con material
+  gateOut: { x: 400, y: 250, w: 50, h: 12 }, // salida camión gestor de residuos
+  gatehouse: { x: 96, y: 222, w: 46, h: 30 },
+  warehouse: { x: 30, y: 36, w: 90, h: 56 },
+  tower: { x: 190, y: 36, w: 180, h: 104 },
+  lift: { x: 158, y: 76, w: 32, h: 44 },
+  scale: { x: 226, y: 196, w: 44, h: 30 },
+  yard: { x: 290, y: 160, w: 170, h: 88 }, // patio de acopio: una pila por tipo de desecho
+  kgPerBlock: 400, // ponytail: altura de pila = 1 bloque cada 400 kg, máx. 6; usar el plan de manejo real cuando exista
+  maxBlocks: 6,
 };
 
 /** Simulador: los 4 pasos del ciclo de un carro, en lenguaje de obra. `where` dice dónde va según el plano. */

@@ -20,7 +20,7 @@ const NAV_ITEMS = [
   {
     href: "/simulador",
     label: "Simulador Edificio",
-    mobileLabel: "Simulador de Edificio (12 Pisos)",
+    mobileLabel: "Simulador de Obra",
     icon: QrCode,
     iconClass: "text-brand-amberDark",
   },

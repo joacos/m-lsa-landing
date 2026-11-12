@@ -36,12 +36,13 @@ Scripts: `dev`, `build`, `start`, `typecheck` (= `tsc --noEmit`, **pasa limpio**
 src/app/layout.tsx          metadata SEO + <SiteShell>
 src/app/page.tsx            /            → HeroSection
 src/app/flujo/              /flujo       → DualFlowShowcase   (subida/bajada paso a paso)
-src/app/simulador/          /simulador   → BuildingSimulator  (3 columnas: elegir piso · FloorPlanMap · "qué hacer ahora" con un solo botón)
+src/app/simulador/          /simulador   → BuildingSimulator  (consola de pisos + 3 columnas: elegir piso · plano [piso | faena] · "qué hacer ahora" con un solo botón)
 src/app/sistema/            /sistema     → FeatureBento (+ GateQrAppDemo #porteria, CartInteractiveView)
 src/app/calculadora/        /calculadora → RoiCalculator
 src/app/ley-rep/            /ley-rep     → SustainabilitySection (totales kg, códigos Sinader, imprimir)
 src/components/ProcessScene escena SVG animada del circuito (`stageIndex` 0–5 de `FLOW_STAGES`, `mode="con"|"sin"`); la usan HeroSection y DualFlowShowcase
-src/components/FloorPlanMap plano de planta SVG del piso: Zona A materiales / Zona B desechos (casillero por tipo), montacargas, frente de trabajo; geometría en `FLOOR_PLAN`
+src/components/FloorPlanMap plano de planta SVG del piso: núcleo y Zonas A/B fijos (`FLOOR_PLAN`) + recintos según variante (`FLOOR_LAYOUTS`)
+src/components/SitePlanMap  plano general de la faena: portería, torre, montacargas, balanza y patio de acopio con una pila por tipo de desecho (`SITE_PLAN`, altura según `wasteTotalsKg`)
 src/components/CountUp      hook `useCountUp` + `<CountUp value="-85%">` (conteo al entrar en pantalla)
 src/components/SiteShell    "use client": MotionConfig(reducedMotion=user) + FaenaProvider + PilotModalContext(usePilotModal) + Navbar + GuidedTourBar + Footer + PilotFormModal
 src/components/FaenaContext Provider de estado global + localStorage; hook useFaena()
@@ -53,8 +54,8 @@ src/types/mlsa.ts           todos los tipos
 Cada `page.tsx` es server component de ~10 líneas que solo exporta `metadata` y renderiza 1 componente cliente.
 
 ## 5. Modelo de estado (lo más importante)
-`FaenaDemoState = { floors: FloorStatus[12], wasteTotalsKg, events (máx 12, más nuevo primero), roiParams, tourProgress }`
-- Persistencia: `localStorage["faena_limpia_demo_v1"]`; se descarta si `floors.length !== 12`. Si cambias el shape → **sube la versión de la key**.
+`FaenaDemoState = { floors: FloorStatus[N] (N entre MIN_FLOORS=3 y MAX_FLOORS=30, default 12, mayor primero), wasteTotalsKg, events (máx 12, más nuevo primero), roiParams, tourProgress }`
+- Persistencia: `localStorage["faena_limpia_demo_v1"]`; se descarta si `floors.length` sale del rango 3–30. Si cambias el shape → **sube la versión de la key**.
 - Piloto: `localStorage["faena_limpia_last_pilot_v1"]`; envío simulado con `setTimeout` (sin API, sin email).
 - Hora: `formatNow()` en el contexto; los reducers reciben `timeLabel` y (opcional) `randomSuffix` para ser deterministas en tests.
 
@@ -66,7 +67,7 @@ DELIVERING_SUPPLIES(100%) → STORED_SATELITE(65%) → COLLECTING_WASTE(85%, was
 - `applyCartMove(prev, from, to, time)` → intercambia el contenido de dos slots (swap), conserva `activeModuleId`.
 - Tokens: `QR-FL{piso 2 dígitos}-{SUP|SAT|WST|EMP}-{4 dígitos}`; módulos `FL-{piso}{A|B|C}`.
 - `RETURN_LOAD_KG = 180`, `MAX_EVENTS = 12`.
-- Simulador: textos de cada paso y "dónde va" en `CYCLE_STEPS` (data). El plano es una planta tipo esquemática igual para los 12 pisos; `moveCartBetweenFloors` sigue en el contexto pero ya no tiene UI.
+- Simulador: textos de cada paso y "dónde va" en `CYCLE_STEPS` (data). `applyFloorCount` (consola del simulador → `setFloorCount`) conserva pisos existentes y agrega vacíos. `floorLayoutId(piso, total)` elige la planta: piso 1 = `acceso`, último = `atico`, el resto `tipoA/B/C` por tercios de altura. Planos esquemáticos (no hay plano real cargado). `moveCartBetweenFloors` sigue en el contexto pero ya no tiene UI.
 - Tour (GuidedTourBar) avanza solo con acciones reales: gateDispatched (/sistema#porteria) → floorDelivered (/simulador) → wasteReturned (/simulador) → impactChecked (/ley-rep o imprimir en /calculadora).
 
 Enums de dominio (`types/mlsa.ts`): Material = Volcanita / Yeso · Madera / Moldajes · Ferretería / Pernos · Residuos Separados.

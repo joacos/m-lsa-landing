@@ -32,7 +32,7 @@ const KPI_COLORS = ["bg-brand-emerald", "bg-brand-amber", "bg-brand-yellow", "bg
 
 const NEXT_STEPS = [
   { href: "/flujo", icon: Repeat, color: "bg-brand-emerald", title: "1. Mira el circuito", detail: "Las 6 etapas de subida y bajada, paso a paso." },
-  { href: "/simulador", icon: Building2, color: "bg-brand-amber", title: "2. Opera la torre", detail: "Mueve carros en un edificio de 12 pisos en vivo." },
+  { href: "/simulador", icon: Building2, color: "bg-brand-amber", title: "2. Opera la torre", detail: "Define los pisos de tu obra y mueve los carros en vivo." },
   { href: "/calculadora", icon: Calculator, color: "bg-brand-yellow", title: "3. Calcula tu ahorro", detail: "Ajusta pisos y trabajadores y ve el retorno." },
 ];
 
@@ -109,7 +109,7 @@ export const HeroSection: React.FC = () => {
                 <span className="h-2 w-2 rounded-full bg-brand-emerald animate-pulse" />
                 Obra en vivo:
               </span>
-              <span>{activeCarts}/12 pisos con carro activo</span>
+              <span>{activeCarts}/{state.floors.length} pisos con carro activo</span>
               <span className="text-slate-400">•</span>
               <span className="font-mono font-semibold text-brand-amberDark">
                 {totalRecoveredKg.toLocaleString("es-CL")} kg recuperados

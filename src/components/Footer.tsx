@@ -4,7 +4,7 @@ import { Boxes } from "lucide-react";
 
 const PLATFORM_LINKS = [
   { href: "/flujo", label: "Flujo Doble (Subida / Bajada)" },
-  { href: "/simulador", label: "Simulador de Edificio (12P)" },
+  { href: "/simulador", label: "Simulador de Obra" },
   { href: "/sistema", label: "Carros Galvanizados Faena Limpia" },
   { href: "/calculadora", label: "Calculadora Ahorro ($850k/mes)" },
   { href: "/ley-rep", label: "Trazabilidad Ley REP" },
