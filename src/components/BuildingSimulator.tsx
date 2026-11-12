@@ -37,22 +37,22 @@ const STATE_UI: Record<
 > = {
   DELIVERING_SUPPLIES: {
     label: "En Despacho",
-    badgeClass: "bg-emerald-950 text-emerald-300 border border-emerald-800",
+    badgeClass: "bg-emerald-50 text-emerald-700 border border-emerald-300",
     nextActionLabel: "Confirmar Llegada a Piso",
   },
   STORED_SATELITE: {
     label: "Bodega en Piso",
-    badgeClass: "bg-blue-950 text-blue-300 border border-blue-800",
+    badgeClass: "bg-sky-50 text-sky-700 border border-sky-300",
     nextActionLabel: "Terminar Material y Cargar Despuntes",
   },
   COLLECTING_WASTE: {
     label: "Cargando Retiro",
-    badgeClass: "bg-amber-950 text-amber-300 border border-amber-800",
+    badgeClass: "bg-orange-50 text-orange-700 border border-orange-300",
     nextActionLabel: "Bajar al Patio y Pesar (+180 kg)",
   },
   EMPTY: {
     label: "Disponible",
-    badgeClass: "bg-slate-800 text-slate-400",
+    badgeClass: "bg-slate-100 text-slate-500",
     nextActionLabel: "Solicitar Reposición Rápida",
   },
 };
@@ -135,27 +135,27 @@ export const BuildingSimulator: React.FC = () => {
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
         {/* Section Header */}
         <div className="text-center max-w-3xl mx-auto">
-          <div className="inline-flex items-center gap-2 rounded-full border border-brand-amber/30 bg-brand-amber/10 px-3.5 py-1 text-xs font-semibold text-brand-amber">
-            <Radio className="h-3.5 w-3.5 animate-pulse text-brand-amber" />
+          <div className="inline-flex items-center gap-2 rounded-full border border-brand-amber/30 bg-brand-amber/10 px-3.5 py-1 text-xs font-semibold text-brand-amberDark">
+            <Radio className="h-3.5 w-3.5 animate-pulse text-brand-amberDark" />
             Control de Obra Vivo · Conectado con Portería y Ley REP
           </div>
-          <h2 className="mt-3 text-3xl font-black text-white sm:text-4xl">
+          <h2 className="mt-3 text-3xl font-black text-brand-ink sm:text-4xl">
             Simulador Interactivo de Edificio (12 Pisos)
           </h2>
-          <p className="mt-3 text-slate-300 text-sm sm:text-base">
+          <p className="mt-3 text-slate-600 text-sm sm:text-base">
             Toca cualquier piso para avanzar su ciclo real, cargar despuntes, bajar peso al patio o mover carros entre niveles.
           </p>
 
           {/* Filter Tabs */}
           <div className="mt-7 flex flex-wrap justify-center gap-2">
-            <div className="inline-flex flex-wrap justify-center rounded-2xl bg-slate-900/90 p-1.5 border border-slate-800 shadow-xl gap-1">
+            <div className="inline-flex flex-wrap justify-center rounded-2xl bg-white p-1.5 border border-slate-200 shadow-xl gap-1">
               <button
                 type="button"
                 onClick={() => setFilter("ALL")}
                 className={`rounded-xl px-4 py-2 text-xs sm:text-sm font-bold transition-all ${
                   filter === "ALL"
-                    ? "bg-slate-700 text-white shadow"
-                    : "text-slate-400 hover:text-white"
+                    ? "bg-slate-200 text-brand-ink shadow"
+                    : "text-slate-500 hover:text-brand-ink"
                 }`}
               >
                 Todos (12)
@@ -165,8 +165,8 @@ export const BuildingSimulator: React.FC = () => {
                 onClick={() => setFilter("SUPPLIES")}
                 className={`flex items-center gap-1.5 rounded-xl px-4 py-2 text-xs sm:text-sm font-bold transition-all ${
                   filter === "SUPPLIES"
-                    ? "bg-brand-emerald text-slate-950 shadow"
-                    : "text-slate-400 hover:text-white"
+                    ? "bg-brand-emerald text-brand-ink shadow"
+                    : "text-slate-500 hover:text-brand-ink"
                 }`}
               >
                 <ArrowUpCircle className="h-4 w-4" />
@@ -177,8 +177,8 @@ export const BuildingSimulator: React.FC = () => {
                 onClick={() => setFilter("WASTE")}
                 className={`flex items-center gap-1.5 rounded-xl px-4 py-2 text-xs sm:text-sm font-bold transition-all ${
                   filter === "WASTE"
-                    ? "bg-brand-amber text-slate-950 shadow"
-                    : "text-slate-400 hover:text-white"
+                    ? "bg-brand-amber text-brand-ink shadow"
+                    : "text-slate-500 hover:text-brand-ink"
                 }`}
               >
                 <ArrowDownCircle className="h-4 w-4" />
@@ -190,7 +190,7 @@ export const BuildingSimulator: React.FC = () => {
                 className={`flex items-center gap-1.5 rounded-xl px-4 py-2 text-xs sm:text-sm font-bold transition-all ${
                   filter === "ALERTS"
                     ? "bg-red-500 text-white shadow"
-                    : "text-slate-400 hover:text-white"
+                    : "text-slate-500 hover:text-brand-ink"
                 }`}
               >
                 <AlertTriangle className="h-3.5 w-3.5" />
@@ -203,16 +203,16 @@ export const BuildingSimulator: React.FC = () => {
         {/* Visualizer Grid */}
         <div className="mt-10 grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
           {/* Building Elevation Visualizer */}
-          <div className="lg:col-span-7 rounded-3xl border border-brand-border bg-slate-900/90 p-6 shadow-2xl backdrop-blur-sm">
-            <div className="flex flex-wrap items-center justify-between gap-2 pb-4 border-b border-slate-800">
-              <div className="flex items-center gap-2 text-white font-bold text-sm">
-                <Building2 className="h-4 w-4 text-brand-emerald" />
+          <div className="lg:col-span-7 rounded-3xl border-2 border-brand-ink bg-white p-6 shadow-hard backdrop-blur-sm">
+            <div className="flex flex-wrap items-center justify-between gap-2 pb-4 border-b border-slate-200">
+              <div className="flex items-center gap-2 text-brand-ink font-bold text-sm">
+                <Building2 className="h-4 w-4 text-brand-emeraldDark" />
                 <span>Torre en Obra — Torre A (Pisos 1 al 12)</span>
               </div>
               <button
                 type="button"
                 onClick={resetDemo}
-                className="inline-flex items-center gap-1 rounded-lg border border-slate-700 bg-slate-800 px-2.5 py-1 text-[11px] font-semibold text-slate-300 hover:text-white"
+                className="inline-flex items-center gap-1 rounded-lg border border-slate-300 bg-slate-100 px-2.5 py-1 text-[11px] font-semibold text-slate-600 hover:text-brand-ink"
               >
                 <RotateCcw className="h-3 w-3" />
                 Reiniciar Torre
@@ -222,7 +222,7 @@ export const BuildingSimulator: React.FC = () => {
             {/* Tower Floors Stack */}
             <div className="mt-4 space-y-1.5">
               {filteredFloors.length === 0 ? (
-                <div className="rounded-xl border border-slate-800 bg-slate-950/60 p-8 text-center text-xs text-slate-400">
+                <div className="rounded-xl border border-slate-200 bg-brand-cream p-8 text-center text-xs text-slate-500">
                   No hay pisos en este filtro por ahora.
                 </div>
               ) : (
@@ -242,54 +242,59 @@ export const BuildingSimulator: React.FC = () => {
                         isSelected
                           ? "border-brand-emerald bg-brand-navy/90 shadow-md ring-1 ring-brand-emerald"
                           : hasAlert
-                          ? "border-amber-500/40 bg-slate-950/70 hover:bg-slate-800/70"
-                          : "border-slate-800/80 bg-slate-950/50 hover:bg-slate-800/60 hover:border-slate-700"
+                          ? "border-amber-500/40 bg-brand-cream hover:bg-slate-100"
+                          : "border-slate-200 bg-brand-cream hover:bg-slate-100 hover:border-slate-300"
                       }`}
                     >
                       <div className="flex items-center gap-3 min-w-0">
                         <div
                           className={`flex h-8 w-9 shrink-0 items-center justify-center rounded-lg text-xs font-black font-mono ${
                             isSelected
-                              ? "bg-brand-emerald text-slate-950"
-                              : "bg-slate-800 text-slate-300 group-hover:bg-slate-700"
+                              ? "bg-brand-emerald text-brand-ink"
+                              : "bg-slate-100 text-slate-600 group-hover:bg-slate-200"
                           }`}
                         >
                           P{fl.floorNumber}
                         </div>
                         <div className="min-w-0">
                           <div className="flex flex-wrap items-center gap-2">
-                            <span className="text-xs font-bold text-white truncate">
+                            <span className="text-xs font-bold text-brand-ink truncate">
                               {isWasteActive
                                 ? fl.wasteType || "Escombro Limpio"
                                 : fl.moduleState === "EMPTY"
                                 ? "Piso Despejado"
                                 : fl.materialType}
                             </span>
-                            <span className="text-[10px] text-slate-400 font-mono">
+                            <span className="text-[10px] text-slate-500 font-mono">
                               {fl.activeModuleId || "Sin carro"}
                             </span>
                             {hasAlert && (
-                              <span className="inline-flex items-center gap-1 rounded bg-red-500/20 border border-red-500/40 px-1.5 py-0.5 text-[10px] font-bold text-red-300">
+                              <span className="inline-flex items-center gap-1 rounded bg-red-500/20 border border-red-500/40 px-1.5 py-0.5 text-[10px] font-bold text-red-600">
                                 ¡Listo para bajar!
                               </span>
                             )}
                           </div>
-                          <p className="text-[10px] text-slate-400 truncate">{fl.supervisor}</p>
+                          <p className="text-[10px] text-slate-500 truncate">{fl.supervisor}</p>
                         </div>
                       </div>
 
                       <div className="flex items-center gap-4 shrink-0">
-                        <span
+                        {/* El estado "llega" desde abajo cuando el carro sube y desde arriba cuando baja */}
+                        <motion.span
+                          key={fl.moduleState}
+                          initial={{ opacity: 0, scale: 0.6, y: isWasteActive || fl.moduleState === "EMPTY" ? -14 : 14 }}
+                          animate={{ opacity: 1, scale: 1, y: 0 }}
+                          transition={{ type: "spring", stiffness: 300, damping: 18 }}
                           className={`hidden sm:inline-flex items-center rounded-md px-2 py-0.5 text-[10px] font-bold ${rowMeta.badgeClass}`}
                         >
                           {rowMeta.label}
-                        </span>
+                        </motion.span>
 
                         <div className="w-16 sm:w-24 text-right">
-                          <div className="flex items-center justify-end gap-1 text-[10px] font-mono text-slate-300 mb-1">
+                          <div className="flex items-center justify-end gap-1 text-[10px] font-mono text-slate-600 mb-1">
                             <span>{fl.fillLevelPercentage}%</span>
                           </div>
-                          <div className="h-1.5 w-full rounded-full bg-slate-800 overflow-hidden">
+                          <div className="h-1.5 w-full rounded-full bg-slate-100 overflow-hidden">
                             <div
                               className={`h-full transition-all duration-500 ${
                                 isWasteActive
@@ -309,9 +314,9 @@ export const BuildingSimulator: React.FC = () => {
               )}
             </div>
 
-            <div className="mt-4 flex flex-wrap items-center justify-between gap-2 text-[11px] text-slate-400 px-2 pt-2 border-t border-slate-800">
+            <div className="mt-4 flex flex-wrap items-center justify-between gap-2 text-[11px] text-slate-500 px-2 pt-2 border-t border-slate-200">
               <span>* Toca un piso para operar su carro en tiempo real</span>
-              <Link href="/sistema#porteria" className="text-brand-emerald font-semibold hover:underline">
+              <Link href="/sistema#porteria" className="text-brand-emeraldDark font-semibold hover:underline">
                 Despachar nueva guía en Portería →
               </Link>
             </div>
@@ -319,19 +324,19 @@ export const BuildingSimulator: React.FC = () => {
 
           {/* Right Column: Controls + Live Activity Log */}
           <div className="lg:col-span-5 space-y-6">
-            <div className="rounded-3xl border border-brand-border bg-gradient-to-b from-slate-900 via-brand-navy to-slate-950 p-6 shadow-2xl">
-              <div className="flex items-center justify-between pb-4 border-b border-slate-800">
+            <div className="rounded-3xl border-2 border-brand-ink bg-gradient-to-b from-white via-brand-navy to-brand-cream p-6 shadow-hard">
+              <div className="flex items-center justify-between pb-4 border-b border-slate-200">
                 <div>
-                  <span className="text-[11px] font-mono uppercase tracking-widest text-brand-emerald">
+                  <span className="text-[11px] font-mono uppercase tracking-widest text-brand-emeraldDark">
                     Control de Carro en Piso
                   </span>
-                  <h3 className="text-xl font-black text-white">
+                  <h3 className="text-xl font-black text-brand-ink">
                     Piso {selectedFloor.floorNumber} — {selectedFloor.activeModuleId || "Disponible"}
                   </h3>
                 </div>
-                <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-brand-emerald/10 text-brand-emerald border border-brand-emerald/30">
+                <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-brand-emerald/10 text-brand-emeraldDark border border-brand-emerald/30">
                   {selectedFloor.moduleState === "COLLECTING_WASTE" ? (
-                    <Trash2 className="h-6 w-6 text-brand-amber" />
+                    <Trash2 className="h-6 w-6 text-brand-amberDark" />
                   ) : (
                     <Box className="h-6 w-6" />
                   )}
@@ -340,35 +345,35 @@ export const BuildingSimulator: React.FC = () => {
 
               {/* Status & Interactive Cycle */}
               <div className="mt-5 space-y-4">
-                <div className="rounded-xl bg-slate-950/70 border border-slate-800 p-4 space-y-2.5">
+                <div className="rounded-xl bg-brand-cream border border-slate-200 p-4 space-y-2.5">
                   <div className="flex items-center justify-between">
-                    <span className="text-xs text-slate-400">Estado Actual</span>
+                    <span className="text-xs text-slate-500">Estado Actual</span>
                     <span className={`rounded-md px-2 py-0.5 text-[11px] font-bold ${uiMeta.badgeClass}`}>
                       {uiMeta.label}
                     </span>
                   </div>
                   <div className="flex items-center justify-between">
-                    <span className="text-xs text-slate-400">Material Cargado</span>
-                    <span className="text-xs font-mono font-bold text-white">
+                    <span className="text-xs text-slate-500">Material Cargado</span>
+                    <span className="text-xs font-mono font-bold text-brand-ink">
                       {selectedFloor.materialType}
                     </span>
                   </div>
                   {selectedFloor.wasteType && (
-                    <div className="flex items-center justify-between pt-2 border-t border-slate-800/80">
-                      <span className="text-xs text-slate-400">Tipo de Residuo</span>
-                      <span className="text-xs font-bold text-brand-amber">
+                    <div className="flex items-center justify-between pt-2 border-t border-slate-200">
+                      <span className="text-xs text-slate-500">Tipo de Residuo</span>
+                      <span className="text-xs font-bold text-brand-amberDark">
                         {selectedFloor.wasteType}
                       </span>
                     </div>
                   )}
                   <div>
-                    <div className="flex items-center justify-between text-xs text-slate-400 mb-1">
+                    <div className="flex items-center justify-between text-xs text-slate-500 mb-1">
                       <span>Nivel de Carga</span>
-                      <span className="font-mono text-white font-bold">
+                      <span className="font-mono text-brand-ink font-bold">
                         {selectedFloor.fillLevelPercentage}% / 100%
                       </span>
                     </div>
-                    <div className="h-2 w-full rounded-full bg-slate-800 overflow-hidden">
+                    <div className="h-2 w-full rounded-full bg-slate-100 overflow-hidden">
                       <div
                         className={`h-full transition-all duration-300 ${
                           selectedFloor.moduleState === "COLLECTING_WASTE"
@@ -383,10 +388,10 @@ export const BuildingSimulator: React.FC = () => {
 
                 {/* Waste selector shown right before converting supply cart to waste return */}
                 {selectedFloor.moduleState === "STORED_SATELITE" && (
-                  <div className="rounded-xl border border-amber-500/30 bg-amber-950/20 p-3">
+                  <div className="rounded-xl border border-amber-500/30 bg-orange-50 p-3">
                     <label
                       htmlFor="floor-waste-select"
-                      className="block text-[11px] font-bold text-brand-amber mb-1.5"
+                      className="block text-[11px] font-bold text-brand-amberDark mb-1.5"
                     >
                       Elige el residuo limpio a cargar para el retorno:
                     </label>
@@ -394,7 +399,7 @@ export const BuildingSimulator: React.FC = () => {
                       id="floor-waste-select"
                       value={selectedWaste}
                       onChange={(e) => setSelectedWaste(e.target.value as WasteType)}
-                      className="w-full rounded-lg border border-slate-700 bg-slate-950 px-3 py-2 text-xs text-white focus:border-brand-amber focus:outline-none"
+                      className="w-full rounded-lg border border-slate-300 bg-brand-cream px-3 py-2 text-xs text-brand-ink focus:border-brand-amber focus:outline-none"
                     >
                       {WASTE_OPTIONS.map((w) => (
                         <option key={w} value={w}>
@@ -411,8 +416,8 @@ export const BuildingSimulator: React.FC = () => {
                   onClick={handleAdvanceCycle}
                   className={`w-full inline-flex items-center justify-center gap-2 rounded-xl py-3 px-4 text-xs sm:text-sm font-bold shadow-lg transition-all active:scale-95 ${
                     selectedFloor.moduleState === "COLLECTING_WASTE"
-                      ? "bg-brand-amber text-slate-950 hover:bg-amber-400"
-                      : "bg-brand-emerald text-slate-950 hover:bg-emerald-400"
+                      ? "bg-brand-amber text-brand-ink hover:bg-amber-400"
+                      : "bg-brand-emerald text-brand-ink hover:bg-emerald-400"
                   }`}
                 >
                   <span>{uiMeta.nextActionLabel}</span>
@@ -420,7 +425,7 @@ export const BuildingSimulator: React.FC = () => {
                 </button>
 
                 {feedbackMsg && (
-                  <div className="rounded-xl border border-brand-emerald/40 bg-brand-emerald/10 px-3 py-2 text-xs font-semibold text-brand-emerald flex items-center justify-between gap-2">
+                  <div className="rounded-xl border border-brand-emerald/40 bg-brand-emerald/10 px-3 py-2 text-xs font-semibold text-brand-emeraldDark flex items-center justify-between gap-2">
                     <span>{feedbackMsg}</span>
                     {feedbackMsg.includes("Ley REP") && (
                       <Link href="/ley-rep" className="underline whitespace-nowrap">
@@ -431,8 +436,8 @@ export const BuildingSimulator: React.FC = () => {
                 )}
 
                 {/* Move Cart to Another Floor */}
-                <div className="rounded-xl border border-slate-800 bg-slate-950/70 p-3">
-                  <span className="block text-[11px] font-semibold text-slate-300 mb-2">
+                <div className="rounded-xl border border-slate-200 bg-brand-cream p-3">
+                  <span className="block text-[11px] font-semibold text-slate-600 mb-2">
                     Mover o reasignar este carro a otro piso:
                   </span>
                   <div className="flex items-center gap-2">
@@ -440,7 +445,7 @@ export const BuildingSimulator: React.FC = () => {
                       aria-label="Piso destino"
                       value={effectiveMoveTarget}
                       onChange={(e) => setMoveTargetFloor(Number(e.target.value))}
-                      className="flex-1 rounded-lg border border-slate-700 bg-slate-900 px-3 py-2 text-xs text-white focus:border-brand-emerald focus:outline-none"
+                      className="flex-1 rounded-lg border border-slate-300 bg-white px-3 py-2 text-xs text-brand-ink focus:border-brand-emerald focus:outline-none"
                     >
                       {emptyTargets
                         .slice()
@@ -454,7 +459,7 @@ export const BuildingSimulator: React.FC = () => {
                     <button
                       type="button"
                       onClick={handleMoveCart}
-                      className="inline-flex items-center gap-1 rounded-lg border border-slate-700 bg-slate-800 px-3 py-2 text-xs font-bold text-white hover:border-brand-emerald hover:text-brand-emerald"
+                      className="inline-flex items-center gap-1 rounded-lg border border-slate-300 bg-slate-100 px-3 py-2 text-xs font-bold text-brand-ink hover:border-brand-emerald hover:text-brand-emeraldDark"
                     >
                       <MoveRight className="h-3.5 w-3.5" />
                       Mover
@@ -464,59 +469,59 @@ export const BuildingSimulator: React.FC = () => {
 
                 {/* Personnel & QR */}
                 <div className="grid grid-cols-2 gap-3 text-xs">
-                  <div className="rounded-xl bg-slate-950/70 border border-slate-800 p-3">
-                    <div className="flex items-center gap-1.5 text-slate-400 mb-1">
-                      <User className="h-3.5 w-3.5 text-brand-emerald" />
+                  <div className="rounded-xl bg-brand-cream border border-slate-200 p-3">
+                    <div className="flex items-center gap-1.5 text-slate-500 mb-1">
+                      <User className="h-3.5 w-3.5 text-brand-emeraldDark" />
                       <span>A Cargo</span>
                     </div>
-                    <p className="font-semibold text-white truncate">{selectedFloor.supervisor}</p>
+                    <p className="font-semibold text-brand-ink truncate">{selectedFloor.supervisor}</p>
                   </div>
-                  <div className="rounded-xl bg-slate-950/70 border border-slate-800 p-3">
-                    <div className="flex items-center gap-1.5 text-slate-400 mb-1">
-                      <Clock className="h-3.5 w-3.5 text-brand-amber" />
+                  <div className="rounded-xl bg-brand-cream border border-slate-200 p-3">
+                    <div className="flex items-center gap-1.5 text-slate-500 mb-1">
+                      <Clock className="h-3.5 w-3.5 text-brand-amberDark" />
                       <span>Última Marca</span>
                     </div>
-                    <p className="font-semibold text-white truncate">{selectedFloor.lastUpdated}</p>
+                    <p className="font-semibold text-brand-ink truncate">{selectedFloor.lastUpdated}</p>
                   </div>
                 </div>
 
-                <div className="rounded-xl border border-brand-emerald/25 bg-slate-950/90 p-3 flex items-center justify-between gap-2">
+                <div className="rounded-xl border border-brand-emerald/25 bg-brand-cream p-3 flex items-center justify-between gap-2">
                   <div className="flex items-center gap-2 min-w-0">
-                    <QrCode className="h-5 w-5 text-brand-emerald shrink-0" />
-                    <code className="text-[11px] font-mono text-brand-emerald truncate">
+                    <QrCode className="h-5 w-5 text-brand-emeraldDark shrink-0" />
+                    <code className="text-[11px] font-mono text-brand-emeraldDark truncate">
                       {selectedFloor.qrToken}
                     </code>
                   </div>
                   <button
                     type="button"
                     onClick={() => copyQrToken(selectedFloor.qrToken)}
-                    className="rounded bg-slate-800 px-2.5 py-1 text-[10px] font-semibold text-slate-300 hover:text-white hover:bg-slate-700 shrink-0"
+                    className="rounded bg-slate-100 px-2.5 py-1 text-[10px] font-semibold text-slate-600 hover:text-brand-ink hover:bg-slate-200 shrink-0"
                   >
                     {copiedToken === selectedFloor.qrToken ? "Copiado" : "Copiar QR"}
                   </button>
                 </div>
 
-                <div className="flex items-center gap-2 text-[11px] text-slate-400">
-                  <ShieldCheck className="h-4 w-4 text-brand-emerald shrink-0" />
+                <div className="flex items-center gap-2 text-[11px] text-slate-500">
+                  <ShieldCheck className="h-4 w-4 text-brand-emeraldDark shrink-0" />
                   <span>Módulo sellado contra polvo y lluvia. Certificación D.S. 594.</span>
                 </div>
               </div>
             </div>
 
             {/* Live Operations Log */}
-            <div className="rounded-3xl border border-slate-800 bg-slate-900/70 p-5">
-              <h4 className="text-xs font-bold uppercase tracking-wider text-slate-300 mb-3">
+            <div className="rounded-3xl border-2 border-brand-ink bg-white p-5">
+              <h4 className="text-xs font-bold uppercase tracking-wider text-slate-600 mb-3">
                 Últimos Movimientos en Obra
               </h4>
               <div className="space-y-2">
                 {state.events.slice(0, 4).map((evt) => (
                   <div
                     key={evt.id}
-                    className="rounded-xl border border-slate-800 bg-slate-950/70 px-3 py-2 text-xs flex items-start justify-between gap-2"
+                    className="rounded-xl border border-slate-200 bg-brand-cream px-3 py-2 text-xs flex items-start justify-between gap-2"
                   >
                     <div className="min-w-0">
-                      <p className="font-bold text-white truncate">{evt.action}</p>
-                      <p className="text-[11px] text-slate-400 truncate">{evt.detail}</p>
+                      <p className="font-bold text-brand-ink truncate">{evt.action}</p>
+                      <p className="text-[11px] text-slate-500 truncate">{evt.detail}</p>
                     </div>
                     <span className="text-[10px] font-mono text-slate-500 shrink-0">
                       {evt.timestamp}

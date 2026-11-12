@@ -250,3 +250,75 @@ export const MLSA_SYSTEM_DATA = {
     },
   ] as FloorStatus[],
 };
+
+/** Las 6 etapas del circuito (3 de subida, 3 de bajada); las usan /flujo y la escena animada. */
+export const FLOW_STAGES = [
+  {
+    id: 0,
+    phase: "UP" as const,
+    short: "1. Portería QR",
+    title: "Escaneo rápido en Portería (<85s)",
+    detail: "El camión descarga directo al carro cerrado y portería asigna el piso con código QR.",
+    position: "bottom" as const,
+    badge: "En Portería · Nivel 0",
+  },
+  {
+    id: 1,
+    phase: "UP" as const,
+    short: "2. Subida Segura",
+    title: "Izaje vertical en grúa o montacargas",
+    detail: "Sube asegurado con cáncamos D.S. 594 sin riesgo de vuelco ni caída de materiales.",
+    position: "middle" as const,
+    badge: "Subiendo por Torre",
+  },
+  {
+    id: 2,
+    phase: "UP" as const,
+    short: "3. Bodega en Piso",
+    title: "Material seco al lado de la cuadrilla",
+    detail: "Los maestros sacan volcanita, pernos y moldajes directo en el piso sin bajar a bodega.",
+    position: "top" as const,
+    badge: "En Piso 8 · Insumos",
+  },
+  {
+    id: 3,
+    phase: "DOWN" as const,
+    short: "4. Carga Despuntes",
+    title: "Separación limpia de sobrantes",
+    detail: "Al vaciarse los insumos, el mismo carro recibe despuntes de madera, fierro o cartón.",
+    position: "top" as const,
+    badge: "En Piso 8 · Retiro",
+  },
+  {
+    id: 4,
+    phase: "DOWN" as const,
+    short: "5. Bajada Ordenada",
+    title: "Retorno en el viaje de vuelta",
+    detail: "Aprovecha la bajada del montacargas y deja pasillos y escaleras 100% despejadas.",
+    position: "middle" as const,
+    badge: "Bajando al Patio",
+  },
+  {
+    id: 5,
+    phase: "DOWN" as const,
+    short: "6. Pesaje Patio",
+    title: "Registro Sinader y Ley REP",
+    detail: "En patio de acopio se pesan los kilos separados con respaldo digital ligado al QR del piso.",
+    position: "bottom" as const,
+    badge: "En Patio · Pesaje",
+  },
+];
+
+/** Home: el problema en obra vs. lo que cambia con el sistema (mismas cifras que `kpis`). */
+export const PROBLEM_SOLUTION = {
+  sin: [
+    { title: "60 minutos al día buscando material", detail: "Los maestros bajan a bodega y esperan el montacargas por cada perno." },
+    { title: "Material mojado, roto o perdido", detail: "Volcanita y moldajes acopiados a la intemperie o en pasillos." },
+    { title: "Escombro en pasillos y escaleras", detail: "Riesgo de caídas y residuos mezclados sin respaldo para la Ley REP." },
+  ],
+  con: [
+    { title: "Bodega cerrada al lado de la cuadrilla", detail: "El carro llega al piso con el material asignado por QR: 8 minutos de búsqueda." },
+    { title: "Carro galvanizado sellado", detail: "Protege de lluvia, polvo y robos: pérdidas bajo el 2%." },
+    { title: "El mismo carro baja los despuntes", detail: "Separados en el piso y pesados en patio: 100% de respaldo Sinader." },
+  ],
+};

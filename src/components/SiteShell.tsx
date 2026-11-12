@@ -1,6 +1,7 @@
 "use client";
 
 import React, { createContext, useContext, useState } from "react";
+import { MotionConfig } from "framer-motion";
 import { Navbar } from "@/components/Navbar";
 import { Footer } from "@/components/Footer";
 import { PilotFormModal } from "@/components/PilotFormModal";
@@ -18,6 +19,7 @@ export function SiteShell({ children }: { children: React.ReactNode }) {
   const openPilot = () => setIsPilotOpen(true);
 
   return (
+    <MotionConfig reducedMotion="user">
     <FaenaProvider>
       <PilotModalContext.Provider value={openPilot}>
         <div className="min-h-screen bg-brand-dark flex flex-col print:bg-white print:text-slate-900">
@@ -27,6 +29,7 @@ export function SiteShell({ children }: { children: React.ReactNode }) {
           </div>
           <main className={isPilotOpen ? "flex-1 print:hidden" : "flex-1"}>{children}</main>
           <div className="print:hidden">
+            <div className="hazard-stripe" />
             <Footer />
           </div>
           <PilotFormModal
@@ -36,5 +39,6 @@ export function SiteShell({ children }: { children: React.ReactNode }) {
         </div>
       </PilotModalContext.Provider>
     </FaenaProvider>
+    </MotionConfig>
   );
 }

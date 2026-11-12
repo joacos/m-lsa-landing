@@ -24,7 +24,7 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="es">
-      <body className="bg-brand-dark text-slate-100 min-h-screen antialiased selection:bg-brand-emerald selection:text-slate-950">
+      <body className="bg-brand-dark text-slate-800 min-h-screen antialiased selection:bg-brand-emerald selection:text-brand-ink">
         <SiteShell>{children}</SiteShell>
       </body>
     </html>

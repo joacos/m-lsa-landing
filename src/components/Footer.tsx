@@ -12,13 +12,13 @@ const PLATFORM_LINKS = [
 
 export const Footer: React.FC = () => {
   return (
-    <footer className="border-t border-brand-border bg-brand-dark py-12 text-slate-400">
+    <footer className="bg-brand-ink py-12 text-slate-400">
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
         <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
           {/* Brand Col */}
           <div className="md:col-span-2 space-y-4">
             <Link href="/" className="inline-flex items-center gap-3 group">
-              <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-brand-emerald text-slate-950 font-black">
+              <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-brand-emerald text-brand-ink font-black">
                 <Boxes className="h-5 w-5" />
               </div>
               <span className="text-xl font-black text-white group-hover:text-brand-emerald transition-colors">
@@ -33,7 +33,7 @@ export const Footer: React.FC = () => {
               Sistema de carros cerrados en obra para llevar materiales directo al piso y retirar despuntes y escombros de vuelta, sin ensuciar pasillos.
             </p>
 
-            <div className="flex flex-wrap items-center gap-4 text-[11px] text-slate-500 font-mono">
+            <div className="flex flex-wrap items-center gap-4 text-[11px] text-slate-400 font-mono">
               <span>Marco Legal:</span>
               <span className="text-slate-300">Ley REP N° 20.920</span>
               <span>•</span>
@@ -69,7 +69,7 @@ export const Footer: React.FC = () => {
             <p className="mt-3 text-xs text-slate-400 leading-normal">
               Desarrollado bajo la metodología <strong>4+1 INACAP</strong> para resolver problemas reales de orden, productividad y sustentabilidad en la construcción chilena.
             </p>
-            <div className="mt-4 rounded-xl bg-slate-900/90 border border-slate-800 p-3 text-[11px] text-slate-400">
+            <div className="mt-4 rounded-xl bg-white/5 border border-white/15 p-3 text-[11px] text-slate-400">
               <span className="text-brand-emerald font-semibold">Piloto en Terreno:</span>
               <p className="mt-0.5 text-slate-400">Despacho en 48 hrs para obras activas en Chile.</p>
             </div>
@@ -77,7 +77,7 @@ export const Footer: React.FC = () => {
         </div>
 
         {/* Bottom Bar */}
-        <div className="mt-12 pt-6 border-t border-slate-800/80 flex flex-col sm:flex-row items-center justify-between text-xs text-slate-500 gap-4">
+        <div className="mt-12 pt-6 border-t border-white/15 flex flex-col sm:flex-row items-center justify-between text-xs text-slate-400 gap-4">
           <p>© {new Date().getFullYear()} Faena Limpia. Todos los derechos reservados.</p>
           <p className="flex items-center gap-1">
             Diseñado para obra limpia y cero mermas.

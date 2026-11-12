@@ -2,7 +2,7 @@
 
 import React, { useState } from "react";
 import Link from "next/link";
-import { QrCode, Smartphone, CheckCircle2, ArrowRight, Clock } from "lucide-react";
+import { QrCode, Smartphone, ArrowRight, Clock } from "lucide-react";
 import { useFaena } from "@/components/FaenaContext";
 import { MaterialType } from "@/types/mlsa";
 
@@ -48,31 +48,31 @@ export const GateQrAppDemo: React.FC = () => {
   return (
     <div
       id="porteria"
-      className="rounded-3xl border border-brand-border bg-gradient-to-br from-slate-900 to-slate-950 p-6 sm:p-8 shadow-xl flex flex-col justify-between"
+      className="rounded-3xl border-2 border-brand-ink bg-gradient-to-br from-white to-brand-cream p-6 sm:p-8 shadow-hard flex flex-col justify-between"
     >
       <div>
         <div className="flex flex-wrap items-center justify-between gap-2">
-          <span className="inline-flex items-center gap-1.5 rounded-full bg-slate-800 px-3 py-1 text-xs font-bold text-slate-200">
-            <Smartphone className="h-3.5 w-3.5 text-brand-amber" />
+          <span className="inline-flex items-center gap-1.5 rounded-full bg-slate-100 px-3 py-1 text-xs font-bold text-slate-800">
+            <Smartphone className="h-3.5 w-3.5 text-brand-amberDark" />
             App Portería QR (3 Clics)
           </span>
-          <span className="inline-flex items-center gap-1 text-xs font-mono text-brand-amber font-semibold">
+          <span className="inline-flex items-center gap-1 text-xs font-mono text-brand-amberDark font-semibold">
             <Clock className="h-3.5 w-3.5" />
             Despacho &lt; 85s
           </span>
         </div>
 
-        <h3 className="mt-4 text-xl sm:text-2xl font-black text-white">
+        <h3 className="mt-4 text-xl sm:text-2xl font-black text-brand-ink">
           Simula el Despacho desde Portería
         </h3>
-        <p className="mt-1.5 text-xs sm:text-sm text-slate-300">
+        <p className="mt-1.5 text-xs sm:text-sm text-slate-600">
           Elige guía, piso destino y cuadrilla. El carro aparece al tiro en el Simulador de Edificio.
         </p>
 
         <form onSubmit={handleDispatch} className="mt-5 space-y-4">
           {/* Step 1: Guide & Material */}
           <div>
-            <span className="block text-[11px] font-mono uppercase text-brand-emerald mb-1.5">
+            <span className="block text-[11px] font-mono uppercase text-brand-emeraldDark mb-1.5">
               1. Escanea o elige guía de despacho
             </span>
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
@@ -88,8 +88,8 @@ export const GateQrAppDemo: React.FC = () => {
                     }}
                     className={`rounded-xl border px-2.5 py-2 text-left text-[11px] font-bold transition-all ${
                       selected
-                        ? "border-brand-emerald bg-brand-emerald/15 text-brand-emerald"
-                        : "border-slate-800 bg-slate-950/70 text-slate-300 hover:border-slate-600"
+                        ? "border-brand-emerald bg-brand-emerald/15 text-brand-emeraldDark"
+                        : "border-slate-200 bg-brand-cream text-slate-600 hover:border-slate-400"
                     }`}
                   >
                     {preset.label}
@@ -102,10 +102,10 @@ export const GateQrAppDemo: React.FC = () => {
           {/* Step 2: Target Floor */}
           <div>
             <div className="flex items-center justify-between mb-1.5">
-              <span className="text-[11px] font-mono uppercase text-brand-emerald">
+              <span className="text-[11px] font-mono uppercase text-brand-emeraldDark">
                 2. Elige piso destino (P1–P12)
               </span>
-              <span className="text-[10px] text-slate-400">Verde = libre</span>
+              <span className="text-[10px] text-slate-500">Verde = libre</span>
             </div>
             <div className="grid grid-cols-6 gap-1.5">
               {state.floors
@@ -121,10 +121,10 @@ export const GateQrAppDemo: React.FC = () => {
                       onClick={() => setSelectedFloor(fl.floorNumber)}
                       className={`rounded-lg border py-1.5 text-xs font-mono font-bold transition-all ${
                         isSelected
-                          ? "border-brand-emerald bg-brand-emerald text-slate-950 shadow"
+                          ? "border-brand-emerald bg-brand-emerald text-brand-ink shadow"
                           : isEmpty
-                          ? "border-emerald-700/60 bg-emerald-950/40 text-emerald-300 hover:border-brand-emerald"
-                          : "border-slate-800 bg-slate-950 text-slate-400 hover:border-slate-600 hover:text-white"
+                          ? "border-emerald-300 bg-emerald-50 text-emerald-700 hover:border-brand-emerald"
+                          : "border-slate-200 bg-brand-cream text-slate-500 hover:border-slate-400 hover:text-brand-ink"
                       }`}
                     >
                       P{fl.floorNumber}
@@ -138,7 +138,7 @@ export const GateQrAppDemo: React.FC = () => {
           <div>
             <label
               htmlFor="gate-crew-select"
-              className="block text-[11px] font-mono uppercase text-brand-emerald mb-1.5"
+              className="block text-[11px] font-mono uppercase text-brand-emeraldDark mb-1.5"
             >
               3. Asigna cuadrilla responsable
             </label>
@@ -146,7 +146,7 @@ export const GateQrAppDemo: React.FC = () => {
               id="gate-crew-select"
               value={supervisor}
               onChange={(e) => setSupervisor(e.target.value)}
-              className="w-full rounded-xl border border-slate-800 bg-slate-950 px-3 py-2.5 text-xs sm:text-sm text-white focus:border-brand-emerald focus:outline-none"
+              className="w-full rounded-xl border border-slate-200 bg-brand-cream px-3 py-2.5 text-xs sm:text-sm text-brand-ink focus:border-brand-emerald focus:outline-none"
             >
               {CREW_OPTIONS.map((crew) => (
                 <option key={crew} value={crew}>
@@ -158,7 +158,7 @@ export const GateQrAppDemo: React.FC = () => {
 
           <button
             type="submit"
-            className="w-full inline-flex items-center justify-center gap-2 rounded-xl bg-brand-emerald py-3 text-sm font-bold text-slate-950 shadow-lg shadow-brand-emerald/20 hover:bg-emerald-400 active:scale-95 transition-all"
+            className="w-full inline-flex items-center justify-center gap-2 rounded-xl bg-brand-emerald py-3 text-sm font-bold text-brand-ink shadow-lg shadow-brand-emerald/20 hover:bg-emerald-400 active:scale-95 transition-all"
           >
             <QrCode className="h-4 w-4" />
             Despachar y Generar QR a Piso {selectedFloor}
@@ -171,30 +171,34 @@ export const GateQrAppDemo: React.FC = () => {
         <div className="mt-5 rounded-2xl border border-brand-emerald/40 bg-brand-emerald/10 p-4">
           <div className="flex items-start justify-between gap-3">
             <div className="flex items-start gap-2.5">
-              <CheckCircle2 className="h-5 w-5 text-brand-emerald shrink-0 mt-0.5" />
+              {/* QR recién generado con línea de escaneo */}
+              <div key={lastDispatch.token} className="relative h-10 w-10 shrink-0 overflow-hidden rounded-md border-2 border-brand-ink bg-white">
+                <QrCode className="h-full w-full p-0.5 text-brand-ink" />
+                <span className="absolute inset-x-0 top-0 h-full border-t-2 border-brand-sky motion-safe:animate-scan" />
+              </div>
               <div>
-                <p className="text-xs font-black text-white">
+                <p className="text-xs font-black text-brand-ink">
                   ¡Carro enviado al Piso {lastDispatch.floor}!
                 </p>
-                <p className="text-[11px] text-slate-300 mt-0.5">
+                <p className="text-[11px] text-slate-600 mt-0.5">
                   {lastDispatch.material} · Token:{" "}
-                  <code className="text-brand-emerald font-mono">{lastDispatch.token}</code>
+                  <code className="text-brand-emeraldDark font-mono">{lastDispatch.token}</code>
                 </p>
               </div>
             </div>
           </div>
           <Link
             href="/simulador"
-            className="mt-3 inline-flex items-center gap-1.5 text-xs font-bold text-brand-emerald hover:underline"
+            className="mt-3 inline-flex items-center gap-1.5 text-xs font-bold text-brand-emeraldDark hover:underline"
           >
             Ver carro subiendo en el Simulador
             <ArrowRight className="h-3.5 w-3.5" />
           </Link>
         </div>
       ) : (
-        <div className="mt-5 pt-3 border-t border-slate-800/80 flex items-center justify-between text-xs text-slate-400">
+        <div className="mt-5 pt-3 border-t border-slate-200 flex items-center justify-between text-xs text-slate-500">
           <span>Funciona sin señal en subterráneos</span>
-          <span className="font-mono text-brand-amber">Listo en 3 clics</span>
+          <span className="font-mono text-brand-amberDark">Listo en 3 clics</span>
         </div>
       )}
     </div>
