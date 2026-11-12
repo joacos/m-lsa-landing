@@ -36,11 +36,12 @@ Scripts: `dev`, `build`, `start`, `typecheck` (= `tsc --noEmit`, **pasa limpio**
 src/app/layout.tsx          metadata SEO + <SiteShell>
 src/app/page.tsx            /            → HeroSection
 src/app/flujo/              /flujo       → DualFlowShowcase   (subida/bajada paso a paso)
-src/app/simulador/          /simulador   → BuildingSimulator  (torre 12 pisos, núcleo de la demo, 533 l)
+src/app/simulador/          /simulador   → BuildingSimulator  (3 columnas: elegir piso · FloorPlanMap · "qué hacer ahora" con un solo botón)
 src/app/sistema/            /sistema     → FeatureBento (+ GateQrAppDemo #porteria, CartInteractiveView)
 src/app/calculadora/        /calculadora → RoiCalculator
 src/app/ley-rep/            /ley-rep     → SustainabilitySection (totales kg, códigos Sinader, imprimir)
 src/components/ProcessScene escena SVG animada del circuito (`stageIndex` 0–5 de `FLOW_STAGES`, `mode="con"|"sin"`); la usan HeroSection y DualFlowShowcase
+src/components/FloorPlanMap plano de planta SVG del piso: Zona A materiales / Zona B desechos (casillero por tipo), montacargas, frente de trabajo; geometría en `FLOOR_PLAN`
 src/components/CountUp      hook `useCountUp` + `<CountUp value="-85%">` (conteo al entrar en pantalla)
 src/components/SiteShell    "use client": MotionConfig(reducedMotion=user) + FaenaProvider + PilotModalContext(usePilotModal) + Navbar + GuidedTourBar + Footer + PilotFormModal
 src/components/FaenaContext Provider de estado global + localStorage; hook useFaena()
@@ -65,6 +66,7 @@ DELIVERING_SUPPLIES(100%) → STORED_SATELITE(65%) → COLLECTING_WASTE(85%, was
 - `applyCartMove(prev, from, to, time)` → intercambia el contenido de dos slots (swap), conserva `activeModuleId`.
 - Tokens: `QR-FL{piso 2 dígitos}-{SUP|SAT|WST|EMP}-{4 dígitos}`; módulos `FL-{piso}{A|B|C}`.
 - `RETURN_LOAD_KG = 180`, `MAX_EVENTS = 12`.
+- Simulador: textos de cada paso y "dónde va" en `CYCLE_STEPS` (data). El plano es una planta tipo esquemática igual para los 12 pisos; `moveCartBetweenFloors` sigue en el contexto pero ya no tiene UI.
 - Tour (GuidedTourBar) avanza solo con acciones reales: gateDispatched (/sistema#porteria) → floorDelivered (/simulador) → wasteReturned (/simulador) → impactChecked (/ley-rep o imprimir en /calculadora).
 
 Enums de dominio (`types/mlsa.ts`): Material = Volcanita / Yeso · Madera / Moldajes · Ferretería / Pernos · Residuos Separados.

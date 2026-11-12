@@ -322,3 +322,70 @@ export const PROBLEM_SOLUTION = {
     { title: "El mismo carro baja los despuntes", detail: "Separados en el piso y pesados en patio: 100% de respaldo Sinader." },
   ],
 };
+
+/**
+ * Plano de planta tipo (esquemático) para orientar dónde se deja cada cosa en el piso.
+ * Coordenadas en el viewBox 480×260 de FloorPlanMap; ajustar `lift`, `materials`, `waste`
+ * y `workFronts` cuando se cargue el plano real de la obra.
+ */
+export const FLOOR_PLAN = {
+  lift: { x: 200, y: 10, w: 40, h: 100 },
+  materials: { x: 70, y: 10, w: 130, h: 100 }, // Zona A, junto al montacargas
+  waste: { x: 280, y: 10, w: 130, h: 100 }, // Zona B, al otro lado del núcleo
+  // ponytail: el frente de trabajo rota por número de piso solo para la demo; ligar a la programación real cuando exista
+  workFronts: [
+    { x: 10, y: 150, w: 115, h: 100 },
+    { x: 125, y: 150, w: 115, h: 100 },
+    { x: 240, y: 150, w: 115, h: 100 },
+    { x: 355, y: 150, w: 115, h: 100 },
+  ],
+  materialSlots: [
+    { key: "Volcanita / Yeso", label: "Volcanita" },
+    { key: "Madera / Moldajes", label: "Madera" },
+    { key: "Ferretería / Pernos", label: "Ferretería" },
+  ],
+  wasteSlots: [
+    { key: "Despuntes de Madera", label: "Madera" },
+    { key: "Despuntes Metálicos", label: "Metal" },
+    { key: "Cartón / Film Embalaje", label: "Cartón" },
+    { key: "Escombro Limpio", label: "Escombro" },
+  ],
+};
+
+/** Simulador: los 4 pasos del ciclo de un carro, en lenguaje de obra. `where` dice dónde va según el plano. */
+export const CYCLE_STEPS: Record<
+  FloorStatus["moduleState"],
+  { stepIndex: number; short: string; status: string; where: (fl: FloorStatus) => string; action: string }
+> = {
+  DELIVERING_SUPPLIES: {
+    stepIndex: 0,
+    short: "Sube material",
+    status: "Subiendo",
+    where: (fl) =>
+      `El carro viene en el montacargas con ${fl.materialType}. Recíbelo y déjalo en la Zona A (verde), junto al montacargas.`,
+    action: "Confirmar llegada al piso",
+  },
+  STORED_SATELITE: {
+    stepIndex: 1,
+    short: "Material en piso",
+    status: "Material",
+    where: (fl) =>
+      `El carro está en la Zona A con ${fl.materialType}. La cuadrilla saca desde ahí y el pasillo queda libre. Cuando se vacíe, elige qué desecho cargar.`,
+    action: "Cargar desechos en el carro",
+  },
+  COLLECTING_WASTE: {
+    stepIndex: 2,
+    short: "Carga desechos",
+    status: "Desechos",
+    where: (fl) =>
+      `El carro está en la Zona B (naranja) recibiendo ${fl.wasteType ?? "desechos"}. Solo ese tipo, sin mezclar. Cuando esté lleno, bájalo.`,
+    action: "Bajar al patio y pesar (+180 kg)",
+  },
+  EMPTY: {
+    stepIndex: 4, // ciclo completo: los 4 pasos quedan marcados
+    short: "Baja y pesa",
+    status: "Sin carro",
+    where: () => "Este piso no tiene carro: las dos zonas están libres. Pide uno nuevo con material.",
+    action: "Pedir carro con material",
+  },
+};

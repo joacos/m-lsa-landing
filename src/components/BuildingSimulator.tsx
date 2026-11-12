@@ -3,533 +3,222 @@
 import React, { useState } from "react";
 import Link from "next/link";
 import { motion } from "framer-motion";
+import { ArrowRight, Check, RotateCcw } from "lucide-react";
 import { useFaena } from "@/components/FaenaContext";
+import { FloorPlanMap } from "@/components/FloorPlanMap";
+import { CYCLE_STEPS, FLOOR_PLAN } from "@/data/mlsa-content";
 import { ModuleState, WasteType } from "@/types/mlsa";
-import {
-  Building2,
-  ArrowUpCircle,
-  ArrowDownCircle,
-  QrCode,
-  ShieldCheck,
-  Box,
-  Trash2,
-  Clock,
-  User,
-  Radio,
-  AlertTriangle,
-  ArrowRight,
-  MoveRight,
-  RotateCcw,
-} from "lucide-react";
 
-type FilterMode = "ALL" | "SUPPLIES" | "WASTE" | "ALERTS";
-
-const WASTE_OPTIONS: WasteType[] = [
-  "Despuntes de Madera",
-  "Despuntes Metálicos",
-  "Cartón / Film Embalaje",
-  "Escombro Limpio",
-];
-
-const STATE_UI: Record<
-  ModuleState,
-  { label: string; badgeClass: string; nextActionLabel: string }
-> = {
-  DELIVERING_SUPPLIES: {
-    label: "En Despacho",
-    badgeClass: "bg-emerald-50 text-emerald-700 border border-emerald-300",
-    nextActionLabel: "Confirmar Llegada a Piso",
-  },
-  STORED_SATELITE: {
-    label: "Bodega en Piso",
-    badgeClass: "bg-sky-50 text-sky-700 border border-sky-300",
-    nextActionLabel: "Terminar Material y Cargar Despuntes",
-  },
-  COLLECTING_WASTE: {
-    label: "Cargando Retiro",
-    badgeClass: "bg-orange-50 text-orange-700 border border-orange-300",
-    nextActionLabel: "Bajar al Patio y Pesar (+180 kg)",
-  },
-  EMPTY: {
-    label: "Disponible",
-    badgeClass: "bg-slate-100 text-slate-500",
-    nextActionLabel: "Solicitar Reposición Rápida",
-  },
+/** Color por estado: verde = material, naranja = desechos, gris = sin carro. */
+const STATE_COLOR: Record<ModuleState, string> = {
+  DELIVERING_SUPPLIES: "bg-brand-emerald",
+  STORED_SATELITE: "bg-brand-emerald",
+  COLLECTING_WASTE: "bg-brand-amber",
+  EMPTY: "bg-slate-200",
 };
 
+const STEP_ORDER: ModuleState[] = ["DELIVERING_SUPPLIES", "STORED_SATELITE", "COLLECTING_WASTE", "EMPTY"];
+
+const LEGEND = [
+  { color: "bg-brand-emerald", text: "Zona A: materiales, junto al montacargas" },
+  { color: "bg-brand-amber", text: "Zona B: desechos, un casillero por tipo" },
+  { color: "bg-brand-yellow", text: "Frente de trabajo de la cuadrilla" },
+  { color: "bg-slate-200", text: "Pasillo y escalera: nunca se acopia" },
+];
+
+/** Simulador en 3 pasos: elige un piso, mira en el plano dónde va cada cosa, avanza el carro con un botón. */
 export const BuildingSimulator: React.FC = () => {
-  const { state, advanceFloorCycle, moveCartBetweenFloors, resetDemo } = useFaena();
-  const [filter, setFilter] = useState<FilterMode>("ALL");
-  const [selectedFloorNumber, setSelectedFloorNumber] = useState<number>(12);
+  const { state, advanceFloorCycle, resetDemo } = useFaena();
+  const [selectedFloorNumber, setSelectedFloorNumber] = useState(12);
   const [selectedWaste, setSelectedWaste] = useState<WasteType>("Despuntes de Madera");
-  const [moveTargetFloor, setMoveTargetFloor] = useState<number>(2);
-  const [copiedToken, setCopiedToken] = useState<string | null>(null);
   const [feedbackMsg, setFeedbackMsg] = useState<string | null>(null);
 
   const floors = state.floors;
-  const selectedFloor = floors.find((f) => f.floorNumber === selectedFloorNumber) || floors[0];
+  const floor = floors.find((f) => f.floorNumber === selectedFloorNumber) || floors[0];
+  const step = CYCLE_STEPS[floor.moduleState];
+  const isWaste = floor.moduleState === "COLLECTING_WASTE";
 
-  const isAlertFloor = (stateVal: ModuleState, fill: number) =>
-    stateVal === "COLLECTING_WASTE" && fill >= 85;
-
-  const filteredFloors = floors.filter((fl) => {
-    if (filter === "SUPPLIES") {
-      return fl.moduleState === "DELIVERING_SUPPLIES" || fl.moduleState === "STORED_SATELITE";
-    }
-    if (filter === "WASTE") return fl.moduleState === "COLLECTING_WASTE";
-    if (filter === "ALERTS") return isAlertFloor(fl.moduleState, fl.fillLevelPercentage);
-    return true;
-  });
-
-  const alertCount = floors.filter((f) =>
-    isAlertFloor(f.moduleState, f.fillLevelPercentage)
-  ).length;
-  const supplyCount = floors.filter(
-    (f) => f.moduleState === "DELIVERING_SUPPLIES" || f.moduleState === "STORED_SATELITE"
-  ).length;
-  const wasteCount = floors.filter((f) => f.moduleState === "COLLECTING_WASTE").length;
-
-  const showTempFeedback = (msg: string) => {
-    setFeedbackMsg(msg);
+  const handleAdvance = () => {
+    const messages: Record<ModuleState, string> = {
+      DELIVERING_SUPPLIES: `Material entregado en la Zona A del Piso ${floor.floorNumber}.`,
+      STORED_SATELITE: `Carro en la Zona B cargando ${selectedWaste}.`,
+      COLLECTING_WASTE: "¡+180 kg pesados y sumados a Ley REP!",
+      EMPTY: `Carro con material en camino al Piso ${floor.floorNumber}.`,
+    };
+    advanceFloorCycle(floor.floorNumber, selectedWaste);
+    setFeedbackMsg(messages[floor.moduleState]);
     window.setTimeout(() => setFeedbackMsg(null), 3200);
   };
 
-  const handleAdvanceCycle = () => {
-    const prevState = selectedFloor.moduleState;
-    advanceFloorCycle(selectedFloor.floorNumber, selectedWaste);
-    if (prevState === "COLLECTING_WASTE") {
-      showTempFeedback("¡+180 kg sumados a Ley REP!");
-    } else if (prevState === "DELIVERING_SUPPLIES") {
-      showTempFeedback(`Material entregado en Piso ${selectedFloor.floorNumber}.`);
-    } else if (prevState === "STORED_SATELITE") {
-      showTempFeedback(`Cargando ${selectedWaste} para retiro.`);
-    } else {
-      showTempFeedback(`Carro en camino al Piso ${selectedFloor.floorNumber}.`);
-    }
-  };
-
-  const handleMoveCart = () => {
-    if (effectiveMoveTarget === selectedFloor.floorNumber) return;
-    moveCartBetweenFloors(selectedFloor.floorNumber, effectiveMoveTarget);
-    setSelectedFloorNumber(effectiveMoveTarget);
-    showTempFeedback(`Carro movido al Piso ${effectiveMoveTarget}.`);
-  };
-
-  const copyQrToken = (token: string) => {
-    navigator.clipboard?.writeText(token);
-    setCopiedToken(token);
-    window.setTimeout(() => setCopiedToken(null), 2500);
-  };
-
-  const uiMeta = STATE_UI[selectedFloor.moduleState];
-  const emptyTargets = floors.filter((f) => f.floorNumber !== selectedFloor.floorNumber);
-  const effectiveMoveTarget =
-    emptyTargets.find((f) => f.floorNumber === moveTargetFloor)?.floorNumber ??
-    emptyTargets[0]?.floorNumber ??
-    selectedFloor.floorNumber;
-
   return (
-    <section id="simulador" className="py-16 bg-brand-dark relative overflow-hidden">
-      <div className="pointer-events-none absolute bottom-0 left-1/3 -z-10 h-[500px] w-[500px] rounded-full bg-brand-emerald/10 blur-[140px]" />
-
+    <section id="simulador" className="py-12 bg-brand-dark">
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-        {/* Section Header */}
-        <div className="text-center max-w-3xl mx-auto">
-          <div className="inline-flex items-center gap-2 rounded-full border border-brand-amber/30 bg-brand-amber/10 px-3.5 py-1 text-xs font-semibold text-brand-amberDark">
-            <Radio className="h-3.5 w-3.5 animate-pulse text-brand-amberDark" />
-            Control de Obra Vivo · Conectado con Portería y Ley REP
-          </div>
-          <h2 className="mt-3 text-3xl font-black text-brand-ink sm:text-4xl">
-            Simulador Interactivo de Edificio (12 Pisos)
-          </h2>
-          <p className="mt-3 text-slate-600 text-sm sm:text-base">
-            Toca cualquier piso para avanzar su ciclo real, cargar despuntes, bajar peso al patio o mover carros entre niveles.
+        <div className="mx-auto max-w-3xl text-center">
+          <h2 className="text-3xl font-black text-brand-ink sm:text-4xl">Simulador de Obra</h2>
+          <p className="mt-3 text-sm text-slate-600 sm:text-base">
+            Elige un piso, mira en el plano dónde se deja el material y dónde los desechos, y avanza el carro con un
+            solo botón.
           </p>
-
-          {/* Filter Tabs */}
-          <div className="mt-7 flex flex-wrap justify-center gap-2">
-            <div className="inline-flex flex-wrap justify-center rounded-2xl bg-white p-1.5 border border-slate-200 shadow-xl gap-1">
-              <button
-                type="button"
-                onClick={() => setFilter("ALL")}
-                className={`rounded-xl px-4 py-2 text-xs sm:text-sm font-bold transition-all ${
-                  filter === "ALL"
-                    ? "bg-slate-200 text-brand-ink shadow"
-                    : "text-slate-500 hover:text-brand-ink"
-                }`}
-              >
-                Todos (12)
-              </button>
-              <button
-                type="button"
-                onClick={() => setFilter("SUPPLIES")}
-                className={`flex items-center gap-1.5 rounded-xl px-4 py-2 text-xs sm:text-sm font-bold transition-all ${
-                  filter === "SUPPLIES"
-                    ? "bg-brand-emerald text-brand-ink shadow"
-                    : "text-slate-500 hover:text-brand-ink"
-                }`}
-              >
-                <ArrowUpCircle className="h-4 w-4" />
-                Subida ({supplyCount})
-              </button>
-              <button
-                type="button"
-                onClick={() => setFilter("WASTE")}
-                className={`flex items-center gap-1.5 rounded-xl px-4 py-2 text-xs sm:text-sm font-bold transition-all ${
-                  filter === "WASTE"
-                    ? "bg-brand-amber text-brand-ink shadow"
-                    : "text-slate-500 hover:text-brand-ink"
-                }`}
-              >
-                <ArrowDownCircle className="h-4 w-4" />
-                Retiro ({wasteCount})
-              </button>
-              <button
-                type="button"
-                onClick={() => setFilter("ALERTS")}
-                className={`flex items-center gap-1.5 rounded-xl px-4 py-2 text-xs sm:text-sm font-bold transition-all ${
-                  filter === "ALERTS"
-                    ? "bg-red-500 text-white shadow"
-                    : "text-slate-500 hover:text-brand-ink"
-                }`}
-              >
-                <AlertTriangle className="h-3.5 w-3.5" />
-                Alertas ({alertCount})
-              </button>
-            </div>
-          </div>
         </div>
 
-        {/* Visualizer Grid */}
-        <div className="mt-10 grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
-          {/* Building Elevation Visualizer */}
-          <div className="lg:col-span-7 rounded-3xl border-2 border-brand-ink bg-white p-6 shadow-hard backdrop-blur-sm">
-            <div className="flex flex-wrap items-center justify-between gap-2 pb-4 border-b border-slate-200">
-              <div className="flex items-center gap-2 text-brand-ink font-bold text-sm">
-                <Building2 className="h-4 w-4 text-brand-emeraldDark" />
-                <span>Torre en Obra — Torre A (Pisos 1 al 12)</span>
-              </div>
-              <button
-                type="button"
-                onClick={resetDemo}
-                className="inline-flex items-center gap-1 rounded-lg border border-slate-300 bg-slate-100 px-2.5 py-1 text-[11px] font-semibold text-slate-600 hover:text-brand-ink"
-              >
-                <RotateCcw className="h-3 w-3" />
-                Reiniciar Torre
-              </button>
+        <div className="mt-8 grid grid-cols-1 items-start gap-6 lg:grid-cols-12">
+          {/* 1. Torre: elegir piso */}
+          <div className="rounded-3xl border-2 border-brand-ink bg-white p-4 shadow-hard lg:col-span-2">
+            <h3 className="text-sm font-black text-brand-ink">1. Elige un piso</h3>
+            <div className="mt-3 grid grid-cols-4 gap-1.5 sm:grid-cols-6 lg:grid-cols-1">
+              {floors.map((fl) => {
+                const selected = fl.floorNumber === floor.floorNumber;
+                return (
+                  <button
+                    key={fl.floorNumber}
+                    type="button"
+                    onClick={() => setSelectedFloorNumber(fl.floorNumber)}
+                    aria-pressed={selected}
+                    className={`flex items-center gap-2 rounded-lg border-2 px-2 py-1.5 text-left text-xs font-bold text-brand-ink transition-colors ${
+                      selected ? "border-brand-ink bg-brand-yellow" : "border-transparent bg-brand-cream hover:border-slate-300"
+                    }`}
+                  >
+                    <span className={`h-3 w-3 shrink-0 rounded-full border border-brand-ink ${STATE_COLOR[fl.moduleState]}`} />
+                    <span className="font-mono">P{fl.floorNumber}</span>
+                    <span className="hidden truncate font-medium text-slate-600 lg:inline">
+                      {CYCLE_STEPS[fl.moduleState].status}
+                    </span>
+                  </button>
+                );
+              })}
             </div>
-
-            {/* Tower Floors Stack */}
-            <div className="mt-4 space-y-1.5">
-              {filteredFloors.length === 0 ? (
-                <div className="rounded-xl border border-slate-200 bg-brand-cream p-8 text-center text-xs text-slate-500">
-                  No hay pisos en este filtro por ahora.
-                </div>
-              ) : (
-                filteredFloors.map((fl) => {
-                  const isSelected = fl.floorNumber === selectedFloorNumber;
-                  const isWasteActive = fl.moduleState === "COLLECTING_WASTE";
-                  const hasAlert = isAlertFloor(fl.moduleState, fl.fillLevelPercentage);
-                  const rowMeta = STATE_UI[fl.moduleState];
-
-                  return (
-                    <motion.button
-                      layout
-                      key={fl.floorNumber}
-                      type="button"
-                      onClick={() => setSelectedFloorNumber(fl.floorNumber)}
-                      className={`w-full group flex items-center justify-between rounded-xl px-4 py-2.5 transition-colors text-left border ${
-                        isSelected
-                          ? "border-brand-emerald bg-brand-navy/90 shadow-md ring-1 ring-brand-emerald"
-                          : hasAlert
-                          ? "border-amber-500/40 bg-brand-cream hover:bg-slate-100"
-                          : "border-slate-200 bg-brand-cream hover:bg-slate-100 hover:border-slate-300"
-                      }`}
-                    >
-                      <div className="flex items-center gap-3 min-w-0">
-                        <div
-                          className={`flex h-8 w-9 shrink-0 items-center justify-center rounded-lg text-xs font-black font-mono ${
-                            isSelected
-                              ? "bg-brand-emerald text-brand-ink"
-                              : "bg-slate-100 text-slate-600 group-hover:bg-slate-200"
-                          }`}
-                        >
-                          P{fl.floorNumber}
-                        </div>
-                        <div className="min-w-0">
-                          <div className="flex flex-wrap items-center gap-2">
-                            <span className="text-xs font-bold text-brand-ink truncate">
-                              {isWasteActive
-                                ? fl.wasteType || "Escombro Limpio"
-                                : fl.moduleState === "EMPTY"
-                                ? "Piso Despejado"
-                                : fl.materialType}
-                            </span>
-                            <span className="text-[10px] text-slate-500 font-mono">
-                              {fl.activeModuleId || "Sin carro"}
-                            </span>
-                            {hasAlert && (
-                              <span className="inline-flex items-center gap-1 rounded bg-red-500/20 border border-red-500/40 px-1.5 py-0.5 text-[10px] font-bold text-red-600">
-                                ¡Listo para bajar!
-                              </span>
-                            )}
-                          </div>
-                          <p className="text-[10px] text-slate-500 truncate">{fl.supervisor}</p>
-                        </div>
-                      </div>
-
-                      <div className="flex items-center gap-4 shrink-0">
-                        {/* El estado "llega" desde abajo cuando el carro sube y desde arriba cuando baja */}
-                        <motion.span
-                          key={fl.moduleState}
-                          initial={{ opacity: 0, scale: 0.6, y: isWasteActive || fl.moduleState === "EMPTY" ? -14 : 14 }}
-                          animate={{ opacity: 1, scale: 1, y: 0 }}
-                          transition={{ type: "spring", stiffness: 300, damping: 18 }}
-                          className={`hidden sm:inline-flex items-center rounded-md px-2 py-0.5 text-[10px] font-bold ${rowMeta.badgeClass}`}
-                        >
-                          {rowMeta.label}
-                        </motion.span>
-
-                        <div className="w-16 sm:w-24 text-right">
-                          <div className="flex items-center justify-end gap-1 text-[10px] font-mono text-slate-600 mb-1">
-                            <span>{fl.fillLevelPercentage}%</span>
-                          </div>
-                          <div className="h-1.5 w-full rounded-full bg-slate-100 overflow-hidden">
-                            <div
-                              className={`h-full transition-all duration-500 ${
-                                isWasteActive
-                                  ? "bg-brand-amber"
-                                  : fl.fillLevelPercentage > 75
-                                  ? "bg-brand-emerald"
-                                  : "bg-teal-400"
-                              }`}
-                              style={{ width: `${fl.fillLevelPercentage}%` }}
-                            />
-                          </div>
-                        </div>
-                      </div>
-                    </motion.button>
-                  );
-                })
-              )}
-            </div>
-
-            <div className="mt-4 flex flex-wrap items-center justify-between gap-2 text-[11px] text-slate-500 px-2 pt-2 border-t border-slate-200">
-              <span>* Toca un piso para operar su carro en tiempo real</span>
-              <Link href="/sistema#porteria" className="text-brand-emeraldDark font-semibold hover:underline">
-                Despachar nueva guía en Portería →
-              </Link>
-            </div>
+            <button
+              type="button"
+              onClick={resetDemo}
+              className="mt-3 inline-flex items-center gap-1 text-[11px] font-semibold text-slate-500 hover:text-brand-ink"
+            >
+              <RotateCcw className="h-3 w-3" />
+              Reiniciar torre
+            </button>
           </div>
 
-          {/* Right Column: Controls + Live Activity Log */}
-          <div className="lg:col-span-5 space-y-6">
-            <div className="rounded-3xl border-2 border-brand-ink bg-gradient-to-b from-white via-brand-navy to-brand-cream p-6 shadow-hard">
-              <div className="flex items-center justify-between pb-4 border-b border-slate-200">
-                <div>
-                  <span className="text-[11px] font-mono uppercase tracking-widest text-brand-emeraldDark">
-                    Control de Carro en Piso
-                  </span>
-                  <h3 className="text-xl font-black text-brand-ink">
-                    Piso {selectedFloor.floorNumber} — {selectedFloor.activeModuleId || "Disponible"}
-                  </h3>
-                </div>
-                <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-brand-emerald/10 text-brand-emeraldDark border border-brand-emerald/30">
-                  {selectedFloor.moduleState === "COLLECTING_WASTE" ? (
-                    <Trash2 className="h-6 w-6 text-brand-amberDark" />
-                  ) : (
-                    <Box className="h-6 w-6" />
-                  )}
-                </div>
-              </div>
-
-              {/* Status & Interactive Cycle */}
-              <div className="mt-5 space-y-4">
-                <div className="rounded-xl bg-brand-cream border border-slate-200 p-4 space-y-2.5">
-                  <div className="flex items-center justify-between">
-                    <span className="text-xs text-slate-500">Estado Actual</span>
-                    <span className={`rounded-md px-2 py-0.5 text-[11px] font-bold ${uiMeta.badgeClass}`}>
-                      {uiMeta.label}
-                    </span>
-                  </div>
-                  <div className="flex items-center justify-between">
-                    <span className="text-xs text-slate-500">Material Cargado</span>
-                    <span className="text-xs font-mono font-bold text-brand-ink">
-                      {selectedFloor.materialType}
-                    </span>
-                  </div>
-                  {selectedFloor.wasteType && (
-                    <div className="flex items-center justify-between pt-2 border-t border-slate-200">
-                      <span className="text-xs text-slate-500">Tipo de Residuo</span>
-                      <span className="text-xs font-bold text-brand-amberDark">
-                        {selectedFloor.wasteType}
-                      </span>
-                    </div>
-                  )}
-                  <div>
-                    <div className="flex items-center justify-between text-xs text-slate-500 mb-1">
-                      <span>Nivel de Carga</span>
-                      <span className="font-mono text-brand-ink font-bold">
-                        {selectedFloor.fillLevelPercentage}% / 100%
-                      </span>
-                    </div>
-                    <div className="h-2 w-full rounded-full bg-slate-100 overflow-hidden">
-                      <div
-                        className={`h-full transition-all duration-300 ${
-                          selectedFloor.moduleState === "COLLECTING_WASTE"
-                            ? "bg-brand-amber"
-                            : "bg-brand-emerald"
-                        }`}
-                        style={{ width: `${selectedFloor.fillLevelPercentage}%` }}
-                      />
-                    </div>
-                  </div>
-                </div>
-
-                {/* Waste selector shown right before converting supply cart to waste return */}
-                {selectedFloor.moduleState === "STORED_SATELITE" && (
-                  <div className="rounded-xl border border-amber-500/30 bg-orange-50 p-3">
-                    <label
-                      htmlFor="floor-waste-select"
-                      className="block text-[11px] font-bold text-brand-amberDark mb-1.5"
-                    >
-                      Elige el residuo limpio a cargar para el retorno:
-                    </label>
-                    <select
-                      id="floor-waste-select"
-                      value={selectedWaste}
-                      onChange={(e) => setSelectedWaste(e.target.value as WasteType)}
-                      className="w-full rounded-lg border border-slate-300 bg-brand-cream px-3 py-2 text-xs text-brand-ink focus:border-brand-amber focus:outline-none"
-                    >
-                      {WASTE_OPTIONS.map((w) => (
-                        <option key={w} value={w}>
-                          {w}
-                        </option>
-                      ))}
-                    </select>
-                  </div>
-                )}
-
-                {/* Primary Cycle Action Button */}
-                <button
-                  type="button"
-                  onClick={handleAdvanceCycle}
-                  className={`w-full inline-flex items-center justify-center gap-2 rounded-xl py-3 px-4 text-xs sm:text-sm font-bold shadow-lg transition-all active:scale-95 ${
-                    selectedFloor.moduleState === "COLLECTING_WASTE"
-                      ? "bg-brand-amber text-brand-ink hover:bg-amber-400"
-                      : "bg-brand-emerald text-brand-ink hover:bg-emerald-400"
-                  }`}
-                >
-                  <span>{uiMeta.nextActionLabel}</span>
-                  <ArrowRight className="h-4 w-4" />
-                </button>
-
-                {feedbackMsg && (
-                  <div className="rounded-xl border border-brand-emerald/40 bg-brand-emerald/10 px-3 py-2 text-xs font-semibold text-brand-emeraldDark flex items-center justify-between gap-2">
-                    <span>{feedbackMsg}</span>
-                    {feedbackMsg.includes("Ley REP") && (
-                      <Link href="/ley-rep" className="underline whitespace-nowrap">
-                        Ver Ley REP →
-                      </Link>
-                    )}
-                  </div>
-                )}
-
-                {/* Move Cart to Another Floor */}
-                <div className="rounded-xl border border-slate-200 bg-brand-cream p-3">
-                  <span className="block text-[11px] font-semibold text-slate-600 mb-2">
-                    Mover o reasignar este carro a otro piso:
-                  </span>
-                  <div className="flex items-center gap-2">
-                    <select
-                      aria-label="Piso destino"
-                      value={effectiveMoveTarget}
-                      onChange={(e) => setMoveTargetFloor(Number(e.target.value))}
-                      className="flex-1 rounded-lg border border-slate-300 bg-white px-3 py-2 text-xs text-brand-ink focus:border-brand-emerald focus:outline-none"
-                    >
-                      {emptyTargets
-                        .slice()
-                        .sort((a, b) => a.floorNumber - b.floorNumber)
-                        .map((fl) => (
-                          <option key={fl.floorNumber} value={fl.floorNumber}>
-                            Piso {fl.floorNumber} ({fl.moduleState === "EMPTY" ? "Libre" : STATE_UI[fl.moduleState].label})
-                          </option>
-                        ))}
-                    </select>
-                    <button
-                      type="button"
-                      onClick={handleMoveCart}
-                      className="inline-flex items-center gap-1 rounded-lg border border-slate-300 bg-slate-100 px-3 py-2 text-xs font-bold text-brand-ink hover:border-brand-emerald hover:text-brand-emeraldDark"
-                    >
-                      <MoveRight className="h-3.5 w-3.5" />
-                      Mover
-                    </button>
-                  </div>
-                </div>
-
-                {/* Personnel & QR */}
-                <div className="grid grid-cols-2 gap-3 text-xs">
-                  <div className="rounded-xl bg-brand-cream border border-slate-200 p-3">
-                    <div className="flex items-center gap-1.5 text-slate-500 mb-1">
-                      <User className="h-3.5 w-3.5 text-brand-emeraldDark" />
-                      <span>A Cargo</span>
-                    </div>
-                    <p className="font-semibold text-brand-ink truncate">{selectedFloor.supervisor}</p>
-                  </div>
-                  <div className="rounded-xl bg-brand-cream border border-slate-200 p-3">
-                    <div className="flex items-center gap-1.5 text-slate-500 mb-1">
-                      <Clock className="h-3.5 w-3.5 text-brand-amberDark" />
-                      <span>Última Marca</span>
-                    </div>
-                    <p className="font-semibold text-brand-ink truncate">{selectedFloor.lastUpdated}</p>
-                  </div>
-                </div>
-
-                <div className="rounded-xl border border-brand-emerald/25 bg-brand-cream p-3 flex items-center justify-between gap-2">
-                  <div className="flex items-center gap-2 min-w-0">
-                    <QrCode className="h-5 w-5 text-brand-emeraldDark shrink-0" />
-                    <code className="text-[11px] font-mono text-brand-emeraldDark truncate">
-                      {selectedFloor.qrToken}
-                    </code>
-                  </div>
-                  <button
-                    type="button"
-                    onClick={() => copyQrToken(selectedFloor.qrToken)}
-                    className="rounded bg-slate-100 px-2.5 py-1 text-[10px] font-semibold text-slate-600 hover:text-brand-ink hover:bg-slate-200 shrink-0"
-                  >
-                    {copiedToken === selectedFloor.qrToken ? "Copiado" : "Copiar QR"}
-                  </button>
-                </div>
-
-                <div className="flex items-center gap-2 text-[11px] text-slate-500">
-                  <ShieldCheck className="h-4 w-4 text-brand-emeraldDark shrink-0" />
-                  <span>Módulo sellado contra polvo y lluvia. Certificación D.S. 594.</span>
-                </div>
-              </div>
+          {/* 2. Plano del piso */}
+          <div className="rounded-3xl border-2 border-brand-ink bg-white p-4 shadow-hard sm:p-5 lg:col-span-6">
+            <div className="flex flex-wrap items-baseline justify-between gap-2">
+              <h3 className="text-sm font-black text-brand-ink">2. Plano del Piso {floor.floorNumber}</h3>
+              <span className="text-[11px] text-slate-500">Planta tipo esquemática · {floor.supervisor}</span>
             </div>
+            <div className="mt-3">
+              <FloorPlanMap floor={floor} />
+            </div>
+            <ul className="mt-3 grid grid-cols-1 gap-x-4 gap-y-1.5 text-xs text-slate-600 sm:grid-cols-2">
+              {LEGEND.map((item) => (
+                <li key={item.text} className="flex items-center gap-2">
+                  <span className={`h-3 w-3 shrink-0 rounded-sm border border-brand-ink ${item.color}`} />
+                  {item.text}
+                </li>
+              ))}
+            </ul>
+          </div>
 
-            {/* Live Operations Log */}
-            <div className="rounded-3xl border-2 border-brand-ink bg-white p-5">
-              <h4 className="text-xs font-bold uppercase tracking-wider text-slate-600 mb-3">
-                Últimos Movimientos en Obra
-              </h4>
-              <div className="space-y-2">
-                {state.events.slice(0, 4).map((evt) => (
+          {/* 3. Qué hacer ahora */}
+          <div className="rounded-3xl border-2 border-brand-ink bg-white p-5 shadow-hard lg:col-span-4">
+            <h3 className="text-sm font-black text-brand-ink">3. Qué hacer ahora</h3>
+
+            <ol className="mt-4 space-y-2">
+              {STEP_ORDER.map((key, i) => {
+                const done = i < step.stepIndex;
+                const current = i === step.stepIndex;
+                return (
+                  <li
+                    key={key}
+                    className={`flex items-center gap-2.5 rounded-lg px-2.5 py-1.5 text-sm ${
+                      current ? "bg-brand-cream font-black text-brand-ink" : done ? "text-slate-500" : "text-slate-400"
+                    }`}
+                  >
+                    <span
+                      className={`flex h-6 w-6 shrink-0 items-center justify-center rounded-full border-2 text-xs font-black ${
+                        current
+                          ? `border-brand-ink text-brand-ink ${isWaste ? "bg-brand-amber" : "bg-brand-emerald"}`
+                          : done
+                          ? "border-slate-300 bg-slate-100 text-slate-500"
+                          : "border-slate-300 text-slate-400"
+                      }`}
+                    >
+                      {done ? <Check className="h-3.5 w-3.5" /> : i + 1}
+                    </span>
+                    {CYCLE_STEPS[key].short}
+                  </li>
+                );
+              })}
+            </ol>
+
+            <motion.p
+              key={`${floor.floorNumber}-${floor.moduleState}`}
+              initial={{ opacity: 0, y: 8 }}
+              animate={{ opacity: 1, y: 0 }}
+              className={`mt-4 rounded-xl border-2 p-3.5 text-sm font-medium text-brand-ink ${
+                isWaste ? "border-brand-amber bg-orange-50" : "border-brand-emerald bg-emerald-50"
+              }`}
+            >
+              {step.where(floor)}
+            </motion.p>
+
+            {floor.moduleState !== "EMPTY" && (
+              <div className="mt-3">
+                <div className="flex items-center justify-between text-xs text-slate-600">
+                  <span>Carro {floor.activeModuleId}</span>
+                  <span className="font-mono font-bold text-brand-ink">{floor.fillLevelPercentage}% lleno</span>
+                </div>
+                <div className="mt-1 h-2 overflow-hidden rounded-full bg-slate-100">
                   <div
-                    key={evt.id}
-                    className="rounded-xl border border-slate-200 bg-brand-cream px-3 py-2 text-xs flex items-start justify-between gap-2"
-                  >
-                    <div className="min-w-0">
-                      <p className="font-bold text-brand-ink truncate">{evt.action}</p>
-                      <p className="text-[11px] text-slate-500 truncate">{evt.detail}</p>
-                    </div>
-                    <span className="text-[10px] font-mono text-slate-500 shrink-0">
-                      {evt.timestamp}
-                    </span>
-                  </div>
-                ))}
+                    className={`h-full transition-all duration-500 ${isWaste ? "bg-brand-amber" : "bg-brand-emerald"}`}
+                    style={{ width: `${floor.fillLevelPercentage}%` }}
+                  />
+                </div>
               </div>
-            </div>
+            )}
+
+            {floor.moduleState === "STORED_SATELITE" && (
+              <label className="mt-4 block text-xs font-bold text-brand-amberDark">
+                ¿Qué desecho se va a cargar?
+                <select
+                  value={selectedWaste}
+                  onChange={(e) => setSelectedWaste(e.target.value as WasteType)}
+                  className="mt-1.5 w-full rounded-lg border-2 border-slate-300 bg-white px-3 py-2 text-sm font-medium text-brand-ink focus:border-brand-amber focus:outline-none"
+                >
+                  {FLOOR_PLAN.wasteSlots.map((slot) => (
+                    <option key={slot.key} value={slot.key}>
+                      {slot.key}
+                    </option>
+                  ))}
+                </select>
+              </label>
+            )}
+
+            <button
+              type="button"
+              onClick={handleAdvance}
+              className={`mt-4 inline-flex w-full items-center justify-center gap-2 rounded-xl border-2 border-brand-ink px-4 py-3.5 text-sm font-black text-brand-ink shadow-hard transition-all hover:-translate-y-0.5 active:translate-y-0 active:shadow-none ${
+                isWaste ? "bg-brand-amber" : "bg-brand-emerald"
+              }`}
+            >
+              {step.action}
+              <ArrowRight className="h-4 w-4" />
+            </button>
+
+            {feedbackMsg && (
+              <p role="status" className="mt-3 flex flex-wrap items-center justify-between gap-2 rounded-lg bg-brand-yellow/40 px-3 py-2 text-xs font-bold text-brand-ink">
+                {feedbackMsg}
+                {feedbackMsg.includes("Ley REP") && (
+                  <Link href="/ley-rep" className="underline">
+                    Ver Ley REP →
+                  </Link>
+                )}
+              </p>
+            )}
+
+            <Link
+              href="/sistema#porteria"
+              className="mt-4 inline-block text-xs font-bold text-brand-emeraldDark hover:underline"
+            >
+              Despachar una guía nueva desde Portería →
+            </Link>
           </div>
         </div>
       </div>
